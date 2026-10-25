@@ -139,10 +139,10 @@
       gap: 10px;
     }
 
-    /* Updated Logo Circle with Provided Image */
+    /* Embedded Brush Monogram Logo Circle */
     .brand-logo-icon {
-      width: 40px;
-      height: 40px;
+      width: 42px;
+      height: 42px;
       background: #fff;
       border-radius: 50%;
       display: flex;
@@ -150,13 +150,13 @@
       justify-content: center;
       border: 2px solid var(--terracotta);
       box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-      overflow: hidden; /* Ensure image stays in circle */
+      flex-shrink: 0;
+      padding: 4px;
     }
 
-    .brand-logo-icon img {
+    .brand-logo-icon svg {
       width: 100%;
       height: 100%;
-      object-fit: cover; /* Fill circle, crop excess */
     }
 
     .brand-name {
@@ -842,23 +842,27 @@
       { q: 'Can I track my loyalty points?', a: 'Yes! Earn 1 stamp for every affogato purchased. 8 stamps = 1 free Affogato Classico!' }
     ];
 
+    // Inline Vector Logo Component matching your exact AA brush monogram
+    function LogoMonogram() {
+      return (
+        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M28 75 L48 22 L62 68 M35 55 L75 48 M45 20 L68 78" 
+            stroke="#1A365D" strokeWidth="9" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      );
+    }
+
     // ==========================================
     // MAIN APP COMPONENT
     // ==========================================
     function App() {
-      // Vicinity State (Simulated 0.1 miles radius)
-      const [userDistance, setUserDistance] = useState(0.04); // miles
+      const [userDistance, setUserDistance] = useState(0.04);
       const isWithinVicinity = userDistance <= 0.1;
-
-      // PWA Prompt Dismiss Banner State
       const [showPwaBanner, setShowPwaBanner] = useState(true);
-
-      // App Navigation & Drawer State
-      const [activeTab, setActiveTab] = useState('home'); // home, menu, map, rewards, account
+      const [activeTab, setActiveTab] = useState('home');
       const [drawerOpen, setDrawerOpen] = useState(false);
-      const [modalView, setModalView] = useState(null); // cart, catering, review, story, faq, contact, auth
+      const [modalView, setModalView] = useState(null);
 
-      // User Account State
       const [user, setUser] = useState({
         name: 'Julia Pace',
         email: 'julia.pace@example.com',
@@ -866,7 +870,6 @@
         points: 120
       });
 
-      // Cart & Favorites State
       const [cart, setCart] = useState([]);
       const [favorites, setFavorites] = useState(['aff-classico', 'soda-craft']);
       const [activeOrder, setActiveOrder] = useState({
@@ -879,24 +882,20 @@
         total: 13.50
       });
 
-      // Catering Calculator State
       const [catering, setCatering] = useState({
         guests: 50,
         hours: 2,
         package: 'Standard'
       });
 
-      // Filtered Menu Category
       const [selectedCategory, setSelectedCategory] = useState('All');
 
-      // Sync Lucide Icons
       useEffect(() => {
         if (window.lucide) {
           window.lucide.createIcons();
         }
       });
 
-      // Toggle Favorites
       const toggleFavorite = (id) => {
         if (favorites.includes(id)) {
           setFavorites(favorites.filter(favId => favId !== id));
@@ -905,7 +904,6 @@
         }
       };
 
-      // Cart Actions
       const addToCart = (item) => {
         const existing = cart.find(c => c.id === item.id);
         if (existing) {
@@ -916,8 +914,6 @@
       };
 
       const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-
-      // Estimated Catering Price
       const cateringPrice = (catering.guests * 8.5) + (catering.hours * 75);
 
       return (
@@ -937,12 +933,11 @@
             </button>
           </div>
 
-          {/* MAIN BRAND HEADER (MATCHING INSTAGRAM LOGO & STYLE) */}
+          {/* MAIN BRAND HEADER */}
           <header className="app-header">
             <div className="brand-title-group">
-              {/* Updated Logo Monogram using image_3.png */}
               <div className="brand-logo-icon">
-                <img src="image_3.png" alt="Antimo's Affogato Logo" />
+                <LogoMonogram />
               </div>
               <div>
                 <div className="brand-name">Antimo's Affogato</div>
@@ -963,12 +958,11 @@
           {/* APP SCROLLABLE CONTENT BODY */}
           <main className="app-content">
 
-            {/* AUTOMATIC ADD TO HOME SCREEN PROMPT BANNER */}
             {showPwaBanner && (
               <div className="pwa-install-banner">
                 <div className="pwa-banner-text">
-                  Strong📱 Save App for 1-Tap Ordering!</strong>
-                  Tap StrongShare 📤</strong> then Strong"Add to Home Screen"</strong> (or bookmark in Chrome/Safari).
+                  <strong>📱 Save App for 1-Tap Ordering!</strong>
+                  Tap <strong>Share 📤</strong> then <strong>"Add to Home Screen"</strong> (or bookmark in Chrome/Safari).
                 </div>
                 <button className="pwa-close-btn" onClick={() => setShowPwaBanner(false)}>✕</button>
               </div>
@@ -977,7 +971,6 @@
             {/* TAB: HOME */}
             {activeTab === 'home' && (
               <div>
-                {/* Active Order Banner if Available */}
                 {activeOrder && (
                   <div className="majolica-card" style={{background: '#fff'}}>
                     <div className="card-title">
@@ -1004,7 +997,6 @@
                   </div>
                 )}
 
-                {/* Vicinity Ordering Status Box */}
                 <div className="majolica-card" style={{textAlign: 'center', background: isWithinVicinity ? 'var(--sand-card)' : '#fff'}}>
                   <div style={{fontSize: '2rem', marginBottom: 6}}>
                     {isWithinVicinity ? '📍' : '🔒'}
@@ -1015,6 +1007,402 @@
                   <p style={{fontSize: '0.78rem', color: '#666', marginBottom: 12}}>
                     {isWithinVicinity 
                       ? 'You are within 0.1 miles. Express mobile ordering is active!' 
-                      : 'Move within 0.1 miles of the truck location to enable online ordering
+                      : 'Move within 0.1 miles of the truck location to enable online ordering.'}
+                  </p>
+                  <button 
+                    className="btn-primary"
+                    disabled={!isWithinVicinity}
+                    onClick={() => setActiveTab('menu')}
+                    style={{opacity: isWithinVicinity ? 1 : 0.6}}
+                  >
+                    {isWithinVicinity ? 'Order Fresh Affogato Now' : 'View Menu Options'}
+                  </button>
+                </div>
 
-http://googleusercontent.com/image_generation_content/23_1101
+                <div className="section-heading">
+                  <i data-lucide="heart" style={{color: 'var(--terracotta)', width: 20}}></i>
+                  <span>Your Favorites</span>
+                </div>
+                {MENU_DATA.filter(m => favorites.includes(m.id)).map(item => (
+                  <div className="menu-item-card" key={item.id}>
+                    <div className="item-img-placeholder">{item.icon}</div>
+                    <div className="item-details">
+                      <div className="item-name">{item.name}</div>
+                      <div className="item-price">${item.price.toFixed(2)}</div>
+                    </div>
+                    <button 
+                      className="add-btn" 
+                      disabled={!isWithinVicinity}
+                      onClick={() => addToCart(item)}
+                    >
+                      + Add
+                    </button>
+                  </div>
+                ))}
+
+                <div className="majolica-card" style={{background: 'var(--majolica-blue)', color: '#fff', marginTop: 16}}>
+                  <h3 style={{fontSize: '1rem', marginBottom: 4, color: '#fff'}}>Private Events & Catering</h3>
+                  <p style={{fontSize: '0.78rem', color: '#d0d8e2', marginBottom: 12}}>
+                    Book Antimo's Affogato for weddings, corporate gatherings, and private events across Long Island.
+                  </p>
+                  <button className="btn-primary" onClick={() => setModalView('catering')}>
+                    Estimate & Request Quote
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* TAB: MENU & ORDERING */}
+            {activeTab === 'menu' && (
+              <div>
+                <div className="section-heading">
+                  <i data-lucide="coffee" style={{color: 'var(--majolica-blue)', width: 20}}></i>
+                  <span>Menu & Ordering</span>
+                </div>
+
+                <div className="menu-category-tabs">
+                  {['All', 'Affogatos', 'Artisanal Gelato', 'Italian Sodas', 'Espresso Bar'].map(cat => (
+                    <button 
+                      key={cat} 
+                      className={`menu-tab ${selectedCategory === cat ? 'active' : ''}`}
+                      onClick={() => setSelectedCategory(cat)}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+
+                {MENU_DATA.filter(i => selectedCategory === 'All' || i.category === selectedCategory).map(item => (
+                  <div className="menu-item-card" key={item.id}>
+                    <button 
+                      className={`fav-btn ${favorites.includes(item.id) ? 'active' : ''}`}
+                      onClick={() => toggleFavorite(item.id)}
+                    >
+                      ♥
+                    </button>
+                    <div className="item-img-placeholder">{item.icon}</div>
+                    <div className="item-details">
+                      <div className="item-name">{item.name}</div>
+                      <div className="item-desc">{item.desc}</div>
+                      <div className="item-price">${item.price.toFixed(2)}</div>
+                    </div>
+                    <button 
+                      className="add-btn" 
+                      disabled={!isWithinVicinity}
+                      onClick={() => addToCart(item)}
+                    >
+                      + Add
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* TAB: TRUCK MAP LOCATION */}
+            {activeTab === 'map' && (
+              <div>
+                <div className="section-heading">
+                  <i data-lucide="map-pin" style={{color: 'var(--terracotta)', width: 20}}></i>
+                  <span>Live Truck Location</span>
+                </div>
+
+                <div className="map-container">
+                  <div className="map-grid-lines"></div>
+                  <div className="truck-pin">
+                    <div className="pin-bubble">🚚 Antimo's Truck</div>
+                    <div style={{width: 12, height: 12, background: 'var(--majolica-blue)', borderRadius: '50%', border: '2px solid #fff'}}></div>
+                  </div>
+                </div>
+
+                <div className="majolica-card">
+                  <div className="card-title">
+                    <span>Current Serving Location</span>
+                    <span className="badge-pill">OPEN NOW</span>
+                  </div>
+                  <p style={{fontWeight: 700, color: 'var(--majolica-blue)', fontSize: '0.9rem'}}>
+                    Long Beach Boardwalk & Riverside Blvd
+                  </p>
+                  <p style={{fontSize: '0.78rem', color: '#666', marginTop: 4}}>
+                    Serving until 8:00 PM today • Long Island, NY
+                  </p>
+                </div>
+
+                <div className="majolica-card">
+                  <div className="card-title">Weekly Schedule</div>
+                  <ul style={{fontSize: '0.78rem', color: '#444', listStyle: 'none', lineHeight: 2}}>
+                    <li><strong>Mon - Wed:</strong> Private Events & Prep</li>
+                    <li><strong>Thu - Fri:</strong> Farmingdale Tech Park (11am - 4pm)</li>
+                    <li><strong>Sat - Sun:</strong> Long Beach Boardwalk (10am - 8pm)</li>
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            {/* TAB: REWARDS */}
+            {activeTab === 'rewards' && (
+              <div>
+                <div className="section-heading">
+                  <i data-lucide="award" style={{color: 'var(--terracotta)', width: 20}}></i>
+                  <span>Loyalty & Stamp Card</span>
+                </div>
+
+                <div className="majolica-card" style={{background: 'var(--majolica-blue)', color: '#fff', textAlign: 'center'}}>
+                  <div style={{fontSize: '0.8rem', opacity: 0.8}}>Antimo's Affogato Rewards</div>
+                  <div style={{fontSize: '2rem', fontWeight: 800, margin: '6px 0', color: 'var(--terracotta)'}}>
+                    {user.stamps} / 8 STAMPS
+                  </div>
+                  <p style={{fontSize: '0.75rem', opacity: 0.9}}>
+                    Earn 1 stamp per affogato purchase. 3 more stamps until your FREE Affogato Classico!
+                  </p>
+                </div>
+
+                <div className="majolica-card">
+                  <div className="card-title">Digital Stamp Card</div>
+                  <div className="stamps-grid">
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map(slot => (
+                      <div key={slot} className={`stamp-slot ${slot <= user.stamps ? 'earned' : ''}`}>
+                        {slot <= user.stamps ? '☕' : slot}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB: ACCOUNT */}
+            {activeTab === 'account' && (
+              <div>
+                <div className="section-heading">
+                  <i data-lucide="user" style={{color: 'var(--majolica-blue)', width: 20}}></i>
+                  <span>Account Profile</span>
+                </div>
+
+                <div className="majolica-card">
+                  <div style={{display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12}}>
+                    <div style={{width: 46, height: 46, background: 'var(--majolica-blue)', color: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1.2rem'}}>
+                      JP
+                    </div>
+                    <div>
+                      <div style={{fontWeight: 800, fontSize: '1rem', color: 'var(--majolica-blue)'}}>{user.name}</div>
+                      <div style={{fontSize: '0.75rem', color: '#666'}}>{user.email}</div>
+                    </div>
+                  </div>
+                  <button className="btn-secondary" style={{fontSize: '0.75rem', padding: '6px 10px'}} onClick={() => setModalView('auth')}>
+                    Switch Account / Logout
+                  </button>
+                </div>
+
+                <div className="majolica-card">
+                  <div className="card-title">Saved Payment Methods</div>
+                  <div style={{fontSize: '0.8rem', color: '#555', display: 'flex', alignItems: 'center', gap: 8}}>
+                    <span>💳 Visa ending in **4921</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+          </main>
+
+          {/* BOTTOM FIXED NAVIGATION BAR */}
+          <nav className="bottom-nav">
+            <button className={`nav-tab ${activeTab === 'home' ? 'active' : ''}`} onClick={() => setActiveTab('home')}>
+              <i data-lucide="home" style={{width: 18, height: 18}}></i>
+              <span>Home</span>
+            </button>
+            <button className={`nav-tab ${activeTab === 'menu' ? 'active' : ''}`} onClick={() => setActiveTab('menu')}>
+              <i data-lucide="coffee" style={{width: 18, height: 18}}></i>
+              <span>Menu</span>
+            </button>
+            <button className={`nav-tab ${activeTab === 'map' ? 'active' : ''}`} onClick={() => setActiveTab('map')}>
+              <i data-lucide="map-pin" style={{width: 18, height: 18}}></i>
+              <span>Truck Map</span>
+            </button>
+            <button className={`nav-tab ${activeTab === 'rewards' ? 'active' : ''}`} onClick={() => setActiveTab('rewards')}>
+              <i data-lucide="award" style={{width: 18, height: 18}}></i>
+              <span>Rewards</span>
+            </button>
+            <button className={`nav-tab ${activeTab === 'account' ? 'active' : ''}`} onClick={() => setActiveTab('account')}>
+              <i data-lucide="user" style={{width: 18, height: 18}}></i>
+              <span>Account</span>
+            </button>
+          </nav>
+
+          {/* SLIDE-OUT DRAWER MENU OVERLAY */}
+          <div className={`drawer-overlay ${drawerOpen ? 'open' : ''}`} onClick={() => setDrawerOpen(false)}>
+            <div className="drawer-menu" onClick={e => e.stopPropagation()}>
+              <div className="drawer-header">
+                <span style={{fontWeight: 800, color: 'var(--majolica-blue)'}}>Navigation</span>
+                <button style={{background: 'none', border: 'none', cursor: 'pointer'}} onClick={() => setDrawerOpen(false)}>✕</button>
+              </div>
+
+              <div className="drawer-item" onClick={() => { setModalView('story'); setDrawerOpen(false); }}>
+                <i data-lucide="book-open" style={{width: 18}}></i>
+                <span>Our Story</span>
+              </div>
+              <div className="drawer-item" onClick={() => { setModalView('catering'); setDrawerOpen(false); }}>
+                <i data-lucide="calendar" style={{width: 18}}></i>
+                <span>Private Event Catering</span>
+              </div>
+              <div className="drawer-item" onClick={() => { setModalView('review'); setDrawerOpen(false); }}>
+                <i data-lucide="star" style={{width: 18}}></i>
+                <span>Write a Review</span>
+              </div>
+              <div className="drawer-item" onClick={() => { setModalView('faq'); setDrawerOpen(false); }}>
+                <i data-lucide="help-circle" style={{width: 18}}></i>
+                <span>FAQ</span>
+              </div>
+              <div className="drawer-item" onClick={() => { setModalView('contact'); setDrawerOpen(false); }}>
+                <i data-lucide="mail" style={{width: 18}}></i>
+                <span>Contact Us</span>
+              </div>
+            </div>
+          </div>
+
+          {/* MODAL BOTTOM SHEETS */}
+          {modalView && (
+            <div className="modal-overlay" onClick={() => setModalView(null)}>
+              <div className="modal-sheet" onClick={e => e.stopPropagation()}>
+                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16}}>
+                  <h3 style={{color: 'var(--majolica-blue)', fontWeight: 800}}>
+                    {modalView === 'cart' && 'Your Cart'}
+                    {modalView === 'catering' && 'Catering & Event Quote'}
+                    {modalView === 'story' && 'Our Story'}
+                    {modalView === 'review' && 'Leave a Review'}
+                    {modalView === 'faq' && 'Frequently Asked Questions'}
+                    {modalView === 'contact' && 'Contact Us'}
+                    {modalView === 'auth' && 'Account Settings'}
+                  </h3>
+                  <button style={{background: 'none', border: 'none', cursor: 'pointer', fontWeight: 'bold'}} onClick={() => setModalView(null)}>✕</button>
+                </div>
+
+                {/* CART MODAL */}
+                {modalView === 'cart' && (
+                  <div>
+                    {cart.length === 0 ? (
+                      <p style={{fontSize: '0.85rem', color: '#666', textAlign: 'center', padding: '20px 0'}}>Your cart is empty.</p>
+                    ) : (
+                      <div>
+                        {cart.map(i => (
+                          <div key={i.id} style={{display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #eee', fontSize: '0.85rem'}}>
+                            <span>{i.qty}x {i.name}</span>
+                            <strong>${(i.price * i.qty).toFixed(2)}</strong>
+                          </div>
+                        ))}
+                        <div style={{marginTop: 16, paddingTop: 12, borderTop: '2px solid var(--majolica-blue)', display: 'flex', justifyContent: 'space-between', fontWeight: 800}}>
+                          <span>Total</span>
+                          <span style={{color: 'var(--terracotta)'}}>${cartTotal.toFixed(2)}</span>
+                        </div>
+                        <button 
+                          className="btn-primary" 
+                          style={{marginTop: 16}}
+                          onClick={() => {
+                            alert('Order submitted successfully to Antimo\'s Affogato truck queue!');
+                            setCart([]);
+                            setModalView(null);
+                          }}
+                        >
+                          Checkout & Pay
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* CATERING MODAL */}
+                {modalView === 'catering' && (
+                  <div>
+                    <div className="form-group">
+                      <label>Estimated Guests</label>
+                      <input 
+                        type="number" 
+                        className="form-control" 
+                        value={catering.guests}
+                        onChange={e => setCatering({...catering, guests: parseInt(e.target.value) || 0})}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Hours of Service</label>
+                      <input 
+                        type="number" 
+                        className="form-control" 
+                        value={catering.hours}
+                        onChange={e => setCatering({...catering, hours: parseInt(e.target.value) || 0})}
+                      />
+                    </div>
+                    <div className="majolica-card" style={{textAlign: 'center', marginTop: 12}}>
+                      <div style={{fontSize: '0.75rem', color: '#666'}}>Estimated Catering Total</div>
+                      <div style={{fontSize: '1.6rem', fontWeight: 800, color: 'var(--terracotta)'}}>
+                        ${cateringPrice.toFixed(2)}
+                      </div>
+                    </div>
+                    <button className="btn-primary" onClick={() => { alert('Catering inquiry submitted!'); setModalView(null); }}>
+                      Submit Quote Request
+                    </button>
+                  </div>
+                )}
+
+                {/* STORY MODAL */}
+                {modalView === 'story' && (
+                  <div style={{fontSize: '0.82rem', lineHeight: 1.6, color: '#444'}}>
+                    <p style={{marginBottom: 10}}>
+                      <strong>Antimo’s Affogato</strong> operates under Fiorire LLC, bringing authentic Italian gelato and rich roasted espresso to Long Island, NY.
+                    </p>
+                    <p>
+                      Inspired by Mediterranean coastal aesthetics and classic blue Majolica tile artistry, we handcrafted our truck experience to bring artisanal indulgence straight to beachside boardwalks and private events.
+                    </p>
+                  </div>
+                )}
+
+                {/* FAQ MODAL */}
+                {modalView === 'faq' && (
+                  <div>
+                    {FAQ_DATA.map((item, idx) => (
+                      <div key={idx} style={{marginBottom: 12, paddingBottom: 8, borderBottom: '1px solid #eee'}}>
+                        <div style={{fontWeight: 700, color: 'var(--majolica-blue)', fontSize: '0.85rem'}}>{item.q}</div>
+                        <div style={{fontSize: '0.78rem', color: '#666', marginTop: 4}}>{item.a}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* CONTACT MODAL */}
+                {modalView === 'contact' && (
+                  <div>
+                    <div className="form-group"><label>Name</label><input className="form-control" placeholder="Julia Pace" /></div>
+                    <div className="form-group"><label>Email</label><input className="form-control" placeholder="julia@example.com" /></div>
+                    <div className="form-group"><label>Message</label><textarea className="form-control" rows="3" placeholder="How can we help?"></textarea></div>
+                    <button className="btn-primary" onClick={() => { alert('Message sent!'); setModalView(null); }}>Send Message</button>
+                  </div>
+                )}
+
+                {/* REVIEW MODAL */}
+                {modalView === 'review' && (
+                  <div>
+                    <div style={{textAlign: 'center', fontSize: '1.5rem', marginBottom: 12, color: 'var(--gold-star)'}}>★ ★ ★ ★ ★</div>
+                    <div className="form-group"><label>Your Review</label><textarea className="form-control" rows="3" placeholder="Tell us about your affogato experience..."></textarea></div>
+                    <button className="btn-primary" onClick={() => { alert('Thank you for your review!'); setModalView(null); }}>Submit Review</button>
+                  </div>
+                )}
+
+                {/* AUTH MODAL */}
+                {modalView === 'auth' && (
+                  <div>
+                    <p style={{fontSize: '0.8rem', color: '#666', marginBottom: 12}}>Logged in as <strong>{user.email}</strong></p>
+                    <button className="btn-secondary" onClick={() => { setUser({ name: 'Guest User', email: 'guest@example.com', stamps: 0, points: 0 }); setModalView(null); }}>
+                      Log Out
+                    </button>
+                  </div>
+                )}
+
+              </div>
+            </div>
+          )}
+
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
