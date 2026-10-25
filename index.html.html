@@ -1,103 +1,1283 @@
-antimos-affogato-app/
-├─ app/
-│  ├─ (tabs)/
-│  │  ├─ _layout.tsx
-│  │  ├─ index.tsx
-│  │  ├─ menu.tsx
-│  │  ├─ rewards.tsx
-│  │  ├─ profile.tsx
-│  │  └─ map.tsx
-│  ├─ auth/
-│  │  ├─ login.tsx
-│  │  └─ signup.tsx
-│  ├─ cart.tsx
-│  ├─ checkout.tsx
-│  ├─ order-status.tsx
-│  ├─ product/
-│  │  └─ [id].tsx
-│  ├─ events.tsx
-│  ├─ contact.tsx
-│  ├─ faq.tsx
-│  ├─ story.tsx
-│  ├─ reviews.tsx
-│  ├─ feedback.tsx
-│  ├─ _layout.tsx
-│  └─ index.tsx
-├─ assets/
-│  ├─ images/
-│  │  ├─ logo/
-│  │  │  ├─ antimos-logo-primary.png
-│  │  │  ├─ antimos-logo-monogram.png
-│  │  │  └─ antimos-logo-dark.png
-│  │  ├─ menu/
-│  │  │  ├─ affogato.jpg
-│  │  │  ├─ cold-brew.jpg
-│  │  │  └─ signature-drink.jpg
-│  │  └─ truck/
-│  │     └─ truck-hero.jpg
-│  └─ fonts/
-│     └─ brand-font.ttf
-├─ components/
-│  ├─ ui/
-│  │  ├─ AppButton.tsx
-│  │  ├─ Card.tsx
-│  │  ├─ GlassCard.tsx
-│  │  ├─ SectionHeader.tsx
-│  │  ├─ Badge.tsx
-│  │  └─ FavoriteButton.tsx
-│  ├─ menu/
-│  │  ├─ MenuCategoryTabs.tsx
-│  │  ├─ MenuItemCard.tsx
-│  │  └─ MenuGrid.tsx
-│  ├─ rewards/
-│  │  ├─ RewardTierCard.tsx
-│  │  └─ PointsProgress.tsx
-│  ├─ map/
-│  │  ├─ TruckMap.tsx
-│  │  └─ LocationStatusCard.tsx
-│  └─ order/
-│     ├─ CartItemRow.tsx
-│     ├─ OrderStatusTimeline.tsx
-│     └─ PickupBadge.tsx
-├─ constants/
-│  ├─ colors.ts
-│  ├─ spacing.ts
-│  ├─ typography.ts
-│  ├─ config.ts
-│  └─ menu.ts
-├─ data/
-│  ├─ menu.ts
-│  ├─ rewards.ts
-│  ├─ faq.ts
-│  ├─ reviews.ts
-│  └─ story.ts
-├─ hooks/
-│  ├─ useLocation.ts
-│  ├─ useGeofence.ts
-│  ├─ useFavorites.ts
-│  └─ useRewards.ts
-├─ lib/
-│  ├─ supabase.ts
-│  ├─ stripe.ts
-│  ├─ geofence.ts
-│  ├─ currency.ts
-│  ├─ format.ts
-│  └─ order-status.ts
-├─ store/
-│  ├─ authStore.ts
-│  ├─ cartStore.ts
-│  ├─ rewardsStore.ts
-│  ├─ orderStore.ts
-│  └─ favoritesStore.ts
-├─ types/
-│  ├─ menu.ts
-│  ├─ order.ts
-│  ├─ rewards.ts
-│  └─ user.ts
-├─ app.config.ts
-├─ babel.config.js
-├─ package.json
-├─ tsconfig.json
-├─ .env.example
-├─ README.md
-└─ App.tsx
+mkdir antimos-affogato
+cd antimos-affogato
+
+cat > package.json <<'EOF'
+{
+  "name": "antimos-affogato",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "14.2.15",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.12",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "14.2.15",
+    "typescript": "^5.5.4"
+  }
+}
+EOF
+
+cat > next.config.mjs <<'EOF'
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+};
+
+export default nextConfig;
+EOF
+
+cat > tsconfig.json <<'EOF'
+{
+  "compilerOptions": {
+    "target": "es5",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [{ "name": "next" }],
+    "paths": { "@/*": ["./*"] }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}
+EOF
+
+cat > next-env.d.ts <<'EOF'
+/// <reference types="next" />
+/// <reference types="next/image-types/global" />
+
+// NOTE: This file should not be edited.
+EOF
+
+cat > .gitignore <<'EOF'
+node_modules
+.next
+out
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.env*
+EOF
+
+mkdir -p app/checkout app/contact app/events app/faq app/map app/menu app/profile app/rewards app/reviews app/reviews/new app/story components data
+
+cat > data/content.ts <<'EOF'
+export const featuredItems = [
+  { name: "Antimo's Affogato", price: "$8.50", tag: "Best Seller" },
+  { name: "Cold Brew Vanilla", price: "$6.50", tag: "Iced" },
+  { name: "Cinnamon Latte", price: "$7.25", tag: "Signature" },
+  { name: "Strawberry Cream Soda", price: "$5.75", tag: "Seasonal" },
+  { name: "Mocha Cloud", price: "$7.75", tag: "Sweet" },
+  { name: "Hazelnut Cortado", price: "$6.25", tag: "Classic" },
+];
+
+export const menuItems = [
+  { name: "Antimo's Affogato", price: "$8.50", tag: "Best Seller" },
+  { name: "Cold Brew Vanilla", price: "$6.50", tag: "Iced" },
+  { name: "Cinnamon Latte", price: "$7.25", tag: "Signature" },
+  { name: "Strawberry Cream Soda", price: "$5.75", tag: "Seasonal" },
+  { name: "Mocha Cloud", price: "$7.75", tag: "Sweet" },
+  { name: "Hazelnut Cortado", price: "$6.25", tag: "Classic" },
+  { name: "Vanilla Bean Cream", price: "$6.00", tag: "Smooth" },
+  { name: "Espresso Tonic", price: "$6.75", tag: "Sparkling" },
+  { name: "Caramel Cloud", price: "$7.50", tag: "House Favorite" },
+];
+
+export const rewardsData = [
+  { title: "Free small coffee", points: "200 pts" },
+  { title: "10% off any drink", points: "350 pts" },
+  { title: "Free pastry add-on", points: "500 pts" },
+];
+
+export const faqData = [
+  {
+    question: "How do I order?",
+    answer:
+      "Browse the menu, add items to cart, and place your order when you're within 0.1 miles of the truck.",
+  },
+  {
+    question: "Do you offer private events?",
+    answer:
+      "Yes. You can submit a private event request through the app and we’ll get back to you with availability and pricing.",
+  },
+  {
+    question: "What are your rewards?",
+    answer:
+      "Earn points on every purchase. Redeem them for free drinks, pastry add-ons, and special seasonal perks.",
+  },
+  {
+    question: "Can I customize my drink?",
+    answer:
+      "Yes. You can request flavors, milk substitutions, and extra toppings depending on availability.",
+  },
+  {
+    question: "Can I place an order before arriving?",
+    answer:
+      "Ordering becomes available when you are within our geofenced service radius around the truck.",
+  },
+];
+
+export const reviewData = [
+  { name: "Ariana", rating: 5, text: "The affogato is unreal and the service is always warm and quick." },
+  { name: "Jordan", rating: 5, text: "Love the loyalty rewards and easy pickup process with the truck." },
+  { name: "Sam", rating: 4, text: "Cinnamon latte is a favorite. Great coffee and really good vibes." },
+];
+
+export const storyContent = [
+  "Antimo's Affogato started with a love for slow coffee and warm neighborhood moments.",
+  "What began as a small coffee cart became a beloved local stop for handcrafted espresso drinks and sweet treats.",
+  "We believe great coffee should feel personal, intentional, and a little magical.",
+  "From late-night cravings to morning routines, we serve every cup with care.",
+];
+EOF
+
+cat > components/BrandMark.tsx <<'EOF'
+export function BrandMark() {
+  return (
+    <div className=\"brandMark\" aria-label=\"Antimo's Affogato logo\">
+      <div className=\"brandMarkLoop brandMarkLoopA\" />
+      <div className=\"brandMarkLoop brandMarkLoopB\" />
+      <div className=\"brandMarkLoop brandMarkLoopC\" />
+    </div>
+  );
+}
+EOF
+
+cat > components/GlassCard.tsx <<'EOF'
+import { ReactNode } from \"react\";
+
+export function GlassCard({ children }: { children: ReactNode }) {
+  return <div className=\"glassCard\">{children}</div>;
+}
+EOF
+
+cat > components/BottomNav.tsx <<'EOF'
+\"use client\";
+
+import Link from \"next/link\";
+import { usePathname } from \"next/navigation\";
+
+const navItems = [
+  { href: \"/\", label: \"Home\" },
+  { href: \"/menu\", label: \"Menu\" },
+  { href: \"/map\", label: \"Map\" },
+  { href: \"/rewards\", label: \"Rewards\" },
+  { href: \"/profile\", label: \"Profile\" },
+];
+
+export function BottomNav() {
+  const pathname = usePathname();
+
+  return (
+    <nav className=\"bottomNav\">
+      {navItems.map((item) => {
+        const active = pathname === item.href;
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={active ? \"navItem active\" : \"navItem\"}
+          >
+            {item.label}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
+EOF
+
+cat > app/layout.tsx <<'EOF'
+import \"./globals.css\";
+import type { Metadata } from \"next\";
+import { BottomNav } from \"@/components/BottomNav\";
+import { BrandMark } from \"@/components/BrandMark\";
+
+export const metadata: Metadata = {
+  title: \"Antimo's Affogato\",
+  description: \"Premium coffee, food truck menu, rewards, and event booking.\",
+  manifest: \"/manifest.webmanifest\",
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang=\"en\">
+      <body>
+        <div className=\"pageShell\">
+          <header className=\"appHeader\">
+            <div className=\"brandWrap\">
+              <BrandMark />
+              <div>
+                <div className=\"brandSmall\">Antimo's</div>
+                <div className=\"brandName\">Affogato</div>
+              </div>
+            </div>
+          </header>
+
+          {children}
+
+          <BottomNav />
+        </div>
+      </body>
+    </html>
+  );
+}
+EOF
+
+cat > app/page.tsx <<'EOF'
+import Link from \"next/link\";
+import { featuredItems } from \"@/data/content\";
+
+export default function HomePage() {
+  return (
+    <main className=\"shell\">
+      <section className=\"heroGlass\">
+        <div className=\"eyebrow\">Now serving</div>
+        <h1>Fresh espresso & handcrafted treats</h1>
+        <p>
+          Neighborhood coffee, signature drinks, and handcrafted delights from the
+          truck.
+        </p>
+
+        <div className=\"heroActions\">
+          <Link href=\"/menu\" className=\"primaryButton\">
+            View Menu
+          </Link>
+          <Link href=\"/rewards\" className=\"secondaryButton\">
+            Rewards
+          </Link>
+        </div>
+      </section>
+
+      <section className=\"sectionBlock\">
+        <div className=\"sectionHead\">
+          <h2>Featured Menu</h2>
+          <Link href=\"/menu\">See all</Link>
+        </div>
+
+        {featuredItems.map((item) => (
+          <div key={item.name} className=\"menuCard\">
+            <div className=\"menuRow\">
+              <div>
+                <strong>{item.name}</strong>
+                <span className=\"tag\">{item.tag}</span>
+              </div>
+              <span className=\"price\">{item.price}</span>
+            </div>
+          </div>
+        ))}
+      </section>
+
+      <section className=\"sectionBlock\">
+        <div className=\"sectionHead\">
+          <h2>Truck Status</h2>
+        </div>
+
+        <div className=\"statusCard\">
+          <div className=\"statusBadge\">Open</div>
+          <div className=\"statusMeta\">
+            <span>0.1 miles away</span>
+            <span>Pickup available now</span>
+          </div>
+        </div>
+      </section>
+    </main>
+  );
+}
+EOF
+
+cat > app/menu/page.tsx <<'EOF'
+import Link from \"next/link\";
+import { menuItems } from \"@/data/content\";
+
+export default function MenuPage() {
+  return (
+    <main className=\"shell\">
+      <section className=\"pageHeader\">
+        <div className=\"eyebrow\">Menu</div>
+        <h1>Curated favorites</h1>
+      </section>
+
+      <section className=\"sectionBlock\">
+        {menuItems.map((item) => (
+          <div key={item.name} className=\"menuCard\">
+            <div className=\"menuRow\">
+              <div>
+                <strong>{item.name}</strong>
+                <span className=\"tag\">{item.tag}</span>
+              </div>
+              <span className=\"price\">{item.price}</span>
+            </div>
+          </div>
+        ))}
+      </section>
+
+      <div className=\"actionStand\">
+        <Link href=\"/checkout\" className=\"primaryButton wide\">
+          Checkout
+        </Link>
+      </div>
+    </main>
+  );
+}
+EOF
+
+cat > app/rewards/page.tsx <<'EOF'
+import Link from \"next/link\";
+import { rewardsData } from \"@/data/content\";
+
+export default function RewardsPage() {
+  return (
+    <main className=\"shell\">
+      <section className=\"pageHeader\">
+        <div className=\"eyebrow\">Rewards</div>
+        <h1>Your points</h1>
+      </section>
+
+      <section className=\"glassCard\">
+        <div className=\"pointsValue\">420</div>
+        <p className=\"muted\">points earned</p>
+
+        <div className=\"progressBar\">
+          <div className=\"progressFill\" />
+        </div>
+
+        <p className=\"muted small\">80 points to your next reward</p>
+      </section>
+
+      <section className=\"sectionBlock\">
+        <div className=\"sectionHead\">
+          <h2>Redeem rewards</h2>
+        </div>
+
+        {rewardsData.map((reward) => (
+          <div key={reward.title} className=\"menuCard\">
+            <div className=\"menuRow\">
+              <strong>{reward.title}</strong>
+              <span>{reward.points}</span>
+            </div>
+          </div>
+        ))}
+      </section>
+
+      <div className=\"actionStand\">
+        <Link href=\"/checkout\" className=\"primaryButton wide\">
+          Apply reward
+        </Link>
+      </div>
+    </main>
+  );
+}
+EOF
+
+cat > app/map/page.tsx <<'EOF'
+import Link from \"next/link\";
+
+export default function MapPage() {
+  return (
+    <main className=\"shell\">
+      <section className=\"pageHeader\">
+        <div className=\"eyebrow\">Truck location</div>
+        <h1>Currently nearby</h1>
+      </section>
+
+      <div className=\"mapCard\">
+        <div className=\"mapPlaceholder\">
+          <div className=\"mapPin\" />
+        </div>
+
+        <div className=\"statusRow\">
+          <span className=\"statusBadge\">Open</span>
+          <span>0.1 miles away</span>
+        </div>
+      </div>
+
+      <div className=\"sectionBlock\">
+        <Link href=\"/checkout\" className=\"primaryButton wide\">
+          Order now
+        </Link>
+      </div>
+    </main>
+  );
+}
+EOF
+
+cat > app/profile/page.tsx <<'EOF'
+import Link from \"next/link\";
+
+export default function ProfilePage() {
+  return (
+    <main className=\"shell\">
+      <section className=\"pageHeader\">
+        <div className=\"eyebrow\">Account</div>
+        <h1>Profile</h1>
+      </section>
+
+      <section className=\"glassCard\">
+        <h2>Guest account</h2>
+        <p className=\"muted\">
+          Sign in to save favorites, track rewards, and manage past orders.
+        </p>
+
+        <div className=\"stack\">
+          <button className=\"primaryButton wide\">Create account</button>
+          <button className=\"secondaryButton wide\">Sign in</button>
+        </div>
+      </section>
+
+      <section className=\"sectionBlock\">
+        <div className=\"menuCard\">
+          <div className=\"menuRow\">
+            <strong>Favorite orders</strong>
+            <span>3</span>
+          </div>
+        </div>
+
+        <div className=\"menuCard\">
+          <div className=\"menuRow\">
+            <strong>Order history</strong>
+            <span>View</span>
+          </div>
+        </div>
+      </section>
+    </main>
+  );
+}
+EOF
+
+cat > app/events/page.tsx <<'EOF'
+import Link from \"next/link\";
+
+export default function EventsPage() {
+  return (
+    <main className=\"shell\">
+      <section className=\"pageHeader\">
+        <div className=\"eyebrow\">Private events</div>
+        <h1>Book the truck</h1>
+      </section>
+
+      <form className=\"formPanel\">
+        <label>
+          Full name
+          <input type=\"text\" placeholder=\"Your name\" />
+        </label>
+
+        <label>
+          Email
+          <input type=\"email\" placeholder=\"you@example.com\" />
+        </label>
+
+        <label>
+          Event type
+          <select defaultValue=\"\">
+            <option value=\"\" disabled>
+              Select one
+            </option>
+            <option>Birthday</option>
+            <option>Corporate</option>
+            <option>Wedding</option>
+            <option>Private party</option>
+            <option>Festival</option>
+          </select>
+        </label>
+
+        <label>
+          Event date
+          <input type=\"date\" />
+        </label>
+
+        <label>
+          Guest count
+          <input type=\"number\" placeholder=\"50\" />
+        </label>
+
+        <label>
+          Event location
+          <input type=\"text\" placeholder=\"City / venue name\" />
+        </label>
+
+        <label>
+          Notes
+          <textarea rows={5} placeholder=\"Tell us about the event and menu preferences\" />
+        </label>
+
+        <button type=\"submit\" className=\"primaryButton wide\">
+          Submit request
+        </button>
+      </form>
+
+      <div className=\"actionStand\">
+        <Link href=\"/\" className=\"secondaryButton wide\">
+          Back home
+        </Link>
+      </div>
+    </main>
+  );
+}
+EOF
+
+cat > app/story/page.tsx <<'EOF'
+import { storyContent } from \"@/data/content\";
+
+export default function StoryPage() {
+  return (
+    <main className=\"shell\">
+      <section className=\"pageHeader\">
+        <div className=\"eyebrow\">Our story</div>
+        <h1>Crafted with heart</h1>
+      </section>
+
+      <div className=\"glassCard storyCard\">
+        {storyContent.map((item, index) => (
+          <p key={index} className=\"storyText\">
+            {item}
+          </p>
+        ))}
+      </div>
+    </main>
+  );
+}
+EOF
+
+cat > app/faq/page.tsx <<'EOF'
+import { faqData } from \"@/data/content\";
+
+export default function FAQPage() {
+  return (
+    <main className=\"shell\">
+      <section className=\"pageHeader\">
+        <div className=\"eyebrow\">FAQ</div>
+        <h1>Frequently asked questions</h1>
+      </section>
+
+      <section className=\"faqList\">
+        {faqData.map((item) => (
+          <div key={item.question} className=\"faqItem\">
+            <h3>{item.question}</h3>
+            <p>{item.answer}</p>
+          </div>
+        ))}
+      </section>
+    </main>
+  );
+}
+EOF
+
+cat > app/contact/page.tsx <<'EOF'
+export default function ContactPage() {
+  return (
+    <main className=\"shell\">
+      <section className=\"pageHeader\">
+        <div className=\"eyebrow\">Contact us</div>
+        <h1>We’d love to hear from you</h1>
+      </section>
+
+      <section className=\"glassCard\">
+        <div className=\"stack\">
+          <p><strong>Email:</strong> hello@antimosaffogato.com</p>
+          <p><strong>Phone:</strong> (555) 202-1847</p>
+          <p><strong>Instagram:</strong> @antimosaffogato</p>
+        </div>
+
+        <div className=\"stack compact\">
+          <button className=\"primaryButton wide\">Call us</button>
+          <button className=\"secondaryButton wide\">Send message</button>
+        </div>
+      </section>
+    </main>
+  );
+}
+EOF
+
+cat > app/reviews/page.tsx <<'EOF'
+import { reviewData } from \"@/data/content\";
+
+export default function ReviewsPage() {
+  return (
+    <main className=\"shell\">
+      <section className=\"pageHeader\">
+        <div className=\"eyebrow\">Reviews</div>
+        <h1>What people are saying</h1>
+      </section>
+
+      <section className=\"sectionBlock\">
+        {reviewData.map((review) => (
+          <div key={review.name} className=\"menuCard reviewCard\">
+            <div className=\"reviewHeader\">
+              <strong>{review.name}</strong>
+              <span>{\"★\".repeat(review.rating)}</span>
+            </div>
+            <p>{review.text}</p>
+          </div>
+        ))}
+      </section>
+
+      <div className=\"actionStand\">
+        <a href=\"/reviews/new\" className=\"primaryButton wide\">
+          Leave a review
+        </a>
+      </div>
+    </main>
+  );
+}
+EOF
+
+cat > app/reviews/new/page.tsx <<'EOF'
+export default function NewReviewPage() {
+  return (
+    <main className=\"shell\">
+      <section className=\"pageHeader\">
+        <div className=\"eyebrow\">Review</div>
+        <h1>Leave feedback</h1>
+      </section>
+
+      <form className=\"formPanel\">
+        <label>
+          Name
+          <input type=\"text\" placeholder=\"Your name\" />
+        </label>
+
+        <label>
+          Rating
+          <select defaultValue=\"\">
+            <option value=\"\" disabled>
+              Choose a rating
+            </option>
+            <option>5 stars</option>
+            <option>4 stars</option>
+            <option>3 stars</option>
+            <option>2 stars</option>
+            <option>1 star</option>
+          </select>
+        </label>
+
+        <label>
+          Review
+          <textarea rows={5} placeholder=\"Tell us about your experience\" />
+        </label>
+
+        <button type=\"submit\" className=\"primaryButton wide\">
+          Submit review
+        </button>
+      </form>
+    </main>
+  );
+}
+EOF
+
+cat > app/checkout/page.tsx <<'EOF'
+export default function CheckoutPage() {
+  return (
+    <main className=\"shell\">
+      <section className=\"pageHeader\">
+        <div className=\"eyebrow\">Checkout</div>
+        <h1>Complete your order</h1>
+      </section>
+
+      <div className=\"glassCard\">
+        <div className=\"menuRow\">
+          <strong>Antimo's Affogato</strong>
+          <span>$8.50</span>
+        </div>
+        <div className=\"menuRow compactRow\">
+          <strong>Cold Brew Vanilla</strong>
+          <span>$6.50</span>
+        </div>
+        <div className=\"divider\" />
+        <div className=\"menuRow totalRow\">
+          <strong>Total</strong>
+          <span>$15.00</span>
+        </div>
+      </div>
+
+      <form className=\"formPanel\">
+        <label>
+          Name
+          <input type=\"text\" placeholder=\"Full name\" />
+        </label>
+
+        <label>
+          Pickup time
+          <select defaultValue=\"\">
+            <option value=\"\" disabled>
+              Choose a time
+            </option>
+            <option>ASAP</option>
+            <option>10:30 AM</option>
+            <option>11:00 AM</option>
+            <option>11:30 AM</option>
+          </select>
+        </label>
+
+        <label>
+          Payment method
+          <select defaultValue=\"\">
+            <option value=\"\" disabled>
+              Select payment
+            </option>
+            <option>Credit card</option>
+            <option>Apple Pay</option>
+            <option>Google Pay</option>
+          </select>
+        </label>
+
+        <button type=\"submit\" className=\"primaryButton wide\">
+          Place order
+        </button>
+      </form>
+    </main>
+  );
+}
+EOF
+
+cat > app/not-found.tsx <<'EOF'
+import Link from \"next/link\";
+
+export default function NotFoundPage() {
+  return (
+    <main className=\"shell centerText\">
+      <h1>Page not found</h1>
+      <Link href=\"/\" className=\"primaryButton\">
+        Back home
+      </Link>
+    </main>
+  );
+}
+EOF
+
+cat > app/globals.css <<'EOF'
+:root {
+  --espresso: #1e1b1a;
+  --cream: #f7f1ea;
+  --latte: #d9b08c;
+  --caramel: #c77c4d;
+  --charcoal: #3b342f;
+  --muted: #6f635e;
+  --white: #ffffff;
+  --glass: rgba(255, 255, 255, 0.42);
+  --glass-strong: rgba(255, 255, 255, 0.62);
+  --border: rgba(30, 27, 26, 0.08);
+  --shadow: rgba(30, 27, 26, 0.10);
+  --success: #2f7d32;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background:
+    radial-gradient(circle at top, rgba(217, 176, 140, 0.25), transparent 30%),
+    var(--cream);
+  color: var(--espresso);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button, input, select, textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.pageShell {
+  max-width: 480px;
+  min-height: 100vh;
+  margin: 0 auto;
+  position: relative;
+  padding: 18px 18px 110px;
+  background:
+    radial-gradient(circle at top, rgba(217, 176, 140, 0.18), transparent 35%),
+    var(--cream);
+}
+
+.appHeader {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding-top: 8px;
+  background: rgba(247, 241, 234, 0.7);
+  backdrop-filter: blur(12px);
+}
+
+.brandWrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.brandSmall {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.brandName {
+  font-weight: 800;
+  font-size: 26px;
+  line-height: 1.1;
+}
+
+.brandMark {
+  position: relative;
+  width: 54px;
+  height: 54px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.34);
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 24px rgba(30,27,26,0.06);
+  overflow: hidden;
+}
+
+.brandMarkLoop {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 38px;
+  height: 13px;
+  border-radius: 999px;
+  background: rgba(30,27,26,0.9);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.2);
+  transform-origin: center;
+}
+
+.brandMarkLoopA {
+  transform: translate(-50%, -50%) rotate(32deg);
+  width: 28px;
+}
+
+.brandMarkLoopB {
+  transform: translate(-50%, -50%) rotate(-30deg);
+  width: 36px;
+  opacity: 0.88;
+}
+
+.brandMarkLoopC {
+  transform: translate(-50%, -50%) rotate(55deg);
+  width: 22px;
+  opacity: 0.7;
+}
+
+.shell {
+  padding-bottom: 56px;
+}
+
+.heroGlass,
+.glassCard,
+.menuCard,
+.formPanel,
+.statusCard {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  box-shadow: 0 18px 30px var(--shadow);
+  backdrop-filter: blur(16px);
+}
+
+.heroGlass {
+  padding: 22px 18px;
+}
+
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+h1, h2, h3, p {
+  margin: 0;
+}
+
+h1 {
+  margin-top: 8px;
+  font-size: 32px;
+  line-height: 1.08;
+}
+
+h2 {
+  font-size: 22px;
+  margin-top: 8px;
+}
+
+p {
+  line-height: 1.55;
+}
+
+.heroGlass p {
+  margin-top: 12px;
+  color: var(--muted);
+}
+
+.heroActions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.primaryButton,
+.secondaryButton {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  padding: 14px 18px;
+  border-radius: 16px;
+  font-weight: 700;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.primaryButton:hover,
+.secondaryButton:hover {
+  transform: translateY(-1px);
+}
+
+.primaryButton {
+  background: var(--espresso);
+  color: var(--white);
+}
+
+.secondaryButton {
+  background: rgba(199, 124, 77, 0.12);
+  color: var(--espresso);
+  border: 1px solid rgba(30,27,26,0.04);
+}
+
+.wide {
+  width: 100%;
+}
+
+.sectionBlock {
+  margin-top: 26px;
+}
+
+.sectionHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.sectionHead a {
+  color: var(--caramel);
+  font-weight: 700;
+}
+
+.menuCard,
+.glassCard,
+.formPanel,
+.statusCard {
+  padding: 18px 16px;
+  margin-top: 12px;
+}
+
+.menuRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.menuRow strong {
+  display: block;
+}
+
+.tag {
+  display: inline-block;
+  margin-top: 8px;
+  background: rgba(217, 176, 140, 0.18);
+  color: var(--espresso);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 8px;
+  border-radius: 999px;
+}
+
+.price {
+  color: var(--caramel);
+  font-weight: 800;
+}
+
+.pageHeader {
+  margin-bottom: 18px;
+}
+
+.statusCard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.statusBadge {
+  display: inline-flex;
+  width: fit-content;
+  padding: 6px 10px;
+  background: rgba(47, 125, 50, 0.12);
+  color: var(--success);
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.statusMeta {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.pointsValue {
+  font-size: 52px;
+  font-weight: 800;
+  letter-spacing: -0.08em;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.small {
+  font-size: 14px;
+}
+
+.progressBar {
+  margin-top: 16px;
+  width: 100%;
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(30, 27, 26, 0.08);
+  overflow: hidden;
+}
+
+.progressFill {
+  width: 70%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--caramel), var(--latte));
+}
+
+.mapCard {
+  margin-top: 18px;
+  border-radius: 28px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.5);
+  border: 1px solid var(--border);
+  box-shadow: 0 18px 30px var(--shadow);
+}
+
+.mapPlaceholder {
+  height: 260px;
+  position: relative;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,0.18), rgba(30,27,26,0.08)),
+    repeating-linear-gradient(
+      0deg,
+      rgba(30,27,26,0.05),
+      rgba(30,27,26,0.05) 1px,
+      transparent 1px,
+      transparent 24px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(30,27,26,0.05),
+      rgba(30,27,26,0.05) 1px,
+      transparent 1px,
+      transparent 24px
+    );
+}
+
+.mapPin {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--caramel);
+  box-shadow: 0 0 0 12px rgba(199, 124, 77, 0.14);
+}
+
+.statusRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  color: var(--muted);
+}
+
+.formPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.formPanel label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-weight: 700;
+  color: var(--espresso);
+}
+
+.formPanel input,
+.formPanel textarea,
+.formPanel select {
+  width: 100%;
+  border: 1px solid rgba(30, 27, 26, 0.09);
+  background: rgba(255,255,255,0.5);
+  color: var(--espresso);
+  border-radius: 14px;
+  padding: 12px 14px;
+  outline: none;
+}
+
+.formPanel textarea {
+  resize: vertical;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.compact {
+  margin-top: 18px;
+}
+
+.actionStand {
+  margin-top: 24px;
+}
+
+.faqList {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.faqItem {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 18px 16px;
+}
+
+.faqItem h3 {
+  margin-bottom: 8px;
+  font-size: 18px;
+}
+
+.storyCard {
+  padding: 22px 18px;
+}
+
+.storyText {
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.reviewHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.reviewCard p {
+  color: var(--muted);
+}
+
+.divider {
+  width: 100%;
+  height: 1px;
+  background: rgba(30,27,26,0.08);
+  margin: 12px 0;
+}
+
+.totalRow {
+  font-size: 20px;
+}
+
+.compactRow {
+  margin-top: 8px;
+}
+
+.centerText {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 60vh;
+}
+
+.bottomNav {
+  position: fixed;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  width: min(92vw, 440px);
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid var(--border);
+  box-shadow: 0 18px 26px rgba(30,27,26,0.08);
+  backdrop-filter: blur(18px);
+  border-radius: 28px;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+}
+
+.navItem {
+  flex: 1;
+  text-align: center;
+  border-radius: 14px;
+  padding: 10px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  transition: all 0.2s ease;
+}
+
+.navItem.active {
+  background: var(--espresso);
+  color: var(--white);
+}
+EOF
+
+npm install
