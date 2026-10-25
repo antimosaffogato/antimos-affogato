@@ -1,845 +1,103 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Antimo's Affogato - Artisanal Gelato & Espresso</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        coastalNavy: '#1A365D',
-                        navyLight: '#2A4A7F',
-                        terracotta: '#D96B43',
-                        terracottaDark: '#C0552D',
-                        creamCanvas: '#FAF6F0',
-                        creamDark: '#EFE6D8',
-                        espresso: '#3C2415'
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        serif: ['Playfair Display', 'serif']
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <style>
-        body {
-            background-color: #FAF6F0;
-            color: #1A365D;
-            font-family: 'Inter', sans-serif;
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
-        }
-        .hide-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .hide-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-        .stamp-grid {
-            background-image: radial-gradient(#D96B43 1px, transparent 1px);
-            background-size: 12px 12px;
-        }
-    </style>
-</head>
-<body class="bg-creamCanvas text-coastalNavy min-h-screen flex flex-col justify-between max-w-md mx-auto shadow-2xl relative overflow-x-hidden pb-20">
-
-    <!-- TOP HEADER -->
-    <header class="sticky top-0 z-30 bg-coastalNavy text-creamCanvas px-4 py-3 shadow-md flex items-center justify-between">
-        <div class="flex items-center space-x-3">
-            <button id="hamburger-btn" class="p-2 rounded-lg text-creamCanvas hover:bg-navyLight focus:outline-none" aria-label="Open Menu">
-                <i class="fa-solid fa-bars text-xl"></i>
-            </button>
-            <div class="flex items-center space-x-2">
-                <!-- LOGO WITH ONERROR FALLBACK -->
-                <div class="w-10 h-10 rounded-full overflow-hidden bg-terracotta flex items-center justify-center border-2 border-creamCanvas shadow-inner">
-                    <img id="app-logo" src="logo.png" alt="Antimo's Logo" class="w-full h-full object-cover" onerror="handleImageError(this, 'logo')">
-                </div>
-                <div>
-                    <h1 class="font-serif font-bold text-lg leading-none tracking-wide text-creamCanvas">Antimo's</h1>
-                    <p class="text-[10px] text-terracotta uppercase tracking-widest font-semibold">Affogato Truck</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="flex items-center space-x-2">
-            <!-- IMAGE GUIDE BUTTON -->
-            <button onclick="toggleModal('image-guide-modal')" class="p-2 bg-terracotta/20 hover:bg-terracotta/40 rounded-full text-creamCanvas text-xs flex items-center gap-1 border border-terracotta/40 px-2.5 transition">
-                <i class="fa-solid fa-image text-terracotta"></i>
-                <span class="hidden sm:inline font-medium">Images</span>
-            </button>
-            
-            <!-- CART BUTTON -->
-            <button onclick="toggleModal('cart-modal')" class="p-2 rounded-full hover:bg-navyLight relative text-creamCanvas">
-                <i class="fa-solid fa-shopping-bag text-xl"></i>
-                <span id="cart-badge" class="hidden absolute -top-1 -right-1 bg-terracotta text-white font-bold text-[10px] w-5 h-5 rounded-full flex items-center justify-center border-2 border-coastalNavy">0</span>
-            </button>
-        </div>
-    </header>
-
-    <!-- PWA BANNER -->
-    <div id="pwa-banner" class="bg-terracotta text-white px-4 py-2 text-xs flex justify-between items-center shadow-inner">
-        <div class="flex items-center space-x-2">
-            <i class="fa-solid fa-mobile-screen text-base"></i>
-            <span>Add <strong>Antimo's</strong> to Home Screen for fast ordering!</span>
-        </div>
-        <div class="flex items-center space-x-2">
-            <button onclick="showPWAInstructions()" class="bg-creamCanvas text-coastalNavy px-2 py-1 rounded text-[11px] font-bold shadow-sm">How</button>
-            <button onclick="closePWABanner()" class="text-white hover:text-creamDark"><i class="fa-solid fa-xmark text-base"></i></button>
-        </div>
-    </div>
-
-    <!-- MAIN CONTAINER -->
-    <main class="flex-1 p-4 overflow-y-auto">
-
-        <!-- LOCATION & VICINITY TOGGLE -->
-        <section class="bg-white rounded-2xl p-4 shadow-sm border border-creamDark mb-5">
-            <div class="flex justify-between items-center mb-2">
-                <div class="flex items-center space-x-2">
-                    <span class="relative flex h-3 w-3">
-                      <span id="status-ping" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                      <span id="status-dot" class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-                    </span>
-                    <span id="truck-status-label" class="text-xs font-semibold uppercase tracking-wider text-emerald-700">Truck Active</span>
-                </div>
-                <!-- Vicinity Distance Toggle -->
-                <div class="bg-creamCanvas p-1 rounded-xl flex items-center text-xs font-medium border border-creamDark">
-                    <button id="toggle-near" onclick="setVicinity(0.04)" class="px-2.5 py-1 rounded-lg transition-all bg-coastalNavy text-white shadow-sm">0.04 mi</button>
-                    <button id="toggle-far" onclick="setVicinity(0.45)" class="px-2.5 py-1 rounded-lg transition-all text-coastalNavy hover:bg-creamDark">0.45 mi</button>
-                </div>
-            </div>
-
-            <div class="flex items-start justify-between">
-                <div>
-                    <h2 class="font-serif font-bold text-coastalNavy text-base flex items-center gap-1.5">
-                        <i class="fa-solid fa-location-dot text-terracotta"></i> Long Beach Boardwalk
-                    </h2>
-                    <p id="vicinity-msg" class="text-xs text-gray-500 mt-0.5">You are within 0.1 mi. Mobile Ordering UNLOCKED!</p>
-                </div>
-                <button onclick="switchTab('map')" class="text-xs font-semibold text-terracotta hover:underline mt-1">Map & Hours →</button>
-            </div>
-            
-            <div id="geofence-alert" class="hidden mt-3 bg-amber-50 border border-amber-200 text-amber-800 text-xs p-2.5 rounded-xl flex items-center space-x-2">
-                <i class="fa-solid fa-triangle-exclamation text-amber-600 text-sm flex-shrink-0"></i>
-                <span>You are currently outside the 0.1-mile truck vicinity lock. Walk closer to place pickup orders!</span>
-            </div>
-        </section>
-
-        <!-- VIEW TAB 1: HOME PAGE -->
-        <section id="tab-home" class="space-y-5">
-            <!-- HERO CARD -->
-            <div class="relative rounded-2xl overflow-hidden shadow-md bg-coastalNavy text-creamCanvas min-h-[160px] flex flex-col justify-end p-5">
-                <img id="hero-img" src="hero.jpg" alt="Affogato Banner" class="absolute inset-0 w-full h-full object-cover opacity-40" onerror="handleImageError(this, 'hero')">
-                <div class="relative z-10">
-                    <span class="bg-terracotta text-creamCanvas text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full mb-2 inline-block">Artisanal Italian</span>
-                    <h2 class="font-serif text-2xl font-bold leading-tight">Hot Espresso.<br/>Cold Gelato.</h2>
-                    <p class="text-xs text-creamDark mt-1 max-w-[220px]">Authentic Roman-style Affogato handcrafted fresh on the Long Island coast.</p>
-                    <button onclick="switchTab('menu')" class="mt-3 bg-terracotta text-white font-medium text-xs px-4 py-2 rounded-xl shadow hover:bg-terracottaDark transition flex items-center gap-2">
-                        <span>Order Now</span>
-                        <i class="fa-solid fa-arrow-right text-[10px]"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- FEATURED CATEGORIES QUICK ACCESS -->
-            <div>
-                <div class="flex justify-between items-center mb-3">
-                    <h3 class="font-serif font-bold text-coastalNavy text-lg">Popular Delights</h3>
-                    <button onclick="switchTab('menu')" class="text-xs text-terracotta font-semibold">View All</button>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-3" id="featured-items-container">
-                    <!-- Populated by JS -->
-                </div>
-            </div>
-
-            <!-- STAMP CARD TEASER -->
-            <div onclick="switchTab('rewards')" class="cursor-pointer bg-gradient-to-r from-coastalNavy to-navyLight text-creamCanvas p-4 rounded-2xl shadow-sm flex items-center justify-between border border-terracotta/30">
-                <div class="space-y-1">
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-terracotta">Antimo's Loyalty</span>
-                    <h4 class="font-serif font-bold text-base">Earn Free Affogato!</h4>
-                    <p class="text-xs text-creamDark">5 of 8 stamps collected</p>
-                </div>
-                <div class="w-12 h-12 bg-creamCanvas text-terracotta rounded-full flex items-center justify-center font-bold text-lg shadow-md border-2 border-terracotta">
-                    <i class="fa-solid fa-stamp"></i>
-                </div>
-            </div>
-        </section>
-
-        <!-- VIEW TAB 2: MENU PAGE -->
-        <section id="tab-menu" class="hidden space-y-4">
-            <!-- MENU CATEGORY PILLS -->
-            <div class="flex space-x-2 overflow-x-auto hide-scrollbar pb-1 text-xs">
-                <button onclick="filterMenu('all')" class="menu-cat-btn active px-3.5 py-2 rounded-full font-semibold whitespace-nowrap bg-coastalNavy text-white">All Items</button>
-                <button onclick="filterMenu('affogato')" class="menu-cat-btn px-3.5 py-2 rounded-full font-semibold whitespace-nowrap bg-creamDark text-coastalNavy">Affogatos</button>
-                <button onclick="filterMenu('gelato')" class="menu-cat-btn px-3.5 py-2 rounded-full font-semibold whitespace-nowrap bg-creamDark text-coastalNavy">Gelato</button>
-                <button onclick="filterMenu('espresso')" class="menu-cat-btn px-3.5 py-2 rounded-full font-semibold whitespace-nowrap bg-creamDark text-coastalNavy">Espresso</button>
-                <button onclick="filterMenu('soda')" class="menu-cat-btn px-3.5 py-2 rounded-full font-semibold whitespace-nowrap bg-creamDark text-coastalNavy">Italian Sodas</button>
-            </div>
-
-            <!-- MENU GRID -->
-            <div class="grid grid-cols-1 gap-3.5" id="menu-items-list">
-                <!-- Populated by JS -->
-            </div>
-        </section>
-
-        <!-- VIEW TAB 3: TRUCK MAP PAGE -->
-        <section id="tab-map" class="hidden space-y-4">
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-creamDark space-y-3">
-                <h3 class="font-serif font-bold text-coastalNavy text-lg flex items-center gap-2">
-                    <i class="fa-solid fa-map-location-dot text-terracotta"></i> Live Truck Location
-                </h3>
-                <p class="text-xs text-gray-600">Catch Antimo's mobile espresso & gelato bar live along the shore!</p>
-
-                <!-- MOCK MAP CONTAINER -->
-                <div class="relative w-full h-48 bg-slate-200 rounded-xl overflow-hidden border border-creamDark flex items-center justify-center">
-                    <!-- Map background graphics -->
-                    <div class="absolute inset-0 bg-blue-100 opacity-60"></div>
-                    <div class="absolute top-1/2 left-0 right-0 h-4 bg-amber-100 -rotate-6 transform origin-center flex items-center justify-center">
-                        <span class="text-[9px] text-amber-700 tracking-widest font-mono">LONG BEACH BOARDWALK</span>
-                    </div>
-                    <!-- Truck Pin -->
-                    <div class="relative z-10 flex flex-col items-center animate-bounce">
-                        <div class="bg-terracotta text-white px-2 py-1 rounded-lg text-[11px] font-bold shadow-md border border-creamCanvas flex items-center gap-1">
-                            <i class="fa-solid fa-truck"></i> Antimo's Truck
-                        </div>
-                        <div class="w-2 h-2 bg-terracotta rotate-45 transform -mt-1"></div>
-                    </div>
-                </div>
-
-                <div class="pt-2 border-t border-gray-100 text-xs space-y-2">
-                    <div class="flex justify-between items-center">
-                        <span class="text-gray-500"><i class="fa-solid fa-clock text-terracotta mr-1"></i> Today's Hours:</span>
-                        <span class="font-semibold text-coastalNavy">10:00 AM - 8:00 PM</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-gray-500"><i class="fa-solid fa-phone text-terracotta mr-1"></i> Hotline:</span>
-                        <a href="tel:5550192831" class="font-semibold text-terracotta underline">(555) 019-2831</a>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- VIEW TAB 4: REWARDS PAGE -->
-        <section id="tab-rewards" class="hidden space-y-4">
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-creamDark space-y-4 text-center">
-                <div class="inline-block p-3 bg-terracotta/10 rounded-full text-terracotta">
-                    <i class="fa-solid fa-award text-3xl"></i>
-                </div>
-                <div>
-                    <h3 class="font-serif font-bold text-xl text-coastalNavy">Antimo's Stamp Card</h3>
-                    <p class="text-xs text-gray-500 mt-1">Buy 8 Affogatos or Gelatos, get 1 signature Affogato FREE!</p>
-                </div>
-
-                <!-- 8-STAMP GRID -->
-                <div class="grid grid-cols-4 gap-3 py-2 px-2 bg-creamCanvas rounded-2xl border border-creamDark">
-                    <!-- Stamps 1 to 5 (Earned) -->
-                    <div class="aspect-square rounded-xl bg-terracotta text-white flex flex-col items-center justify-center shadow-sm relative overflow-hidden">
-                        <i class="fa-solid fa-mug-hot text-lg"></i>
-                        <span class="text-[9px] font-bold mt-1">#1</span>
-                    </div>
-                    <div class="aspect-square rounded-xl bg-terracotta text-white flex flex-col items-center justify-center shadow-sm relative overflow-hidden">
-                        <i class="fa-solid fa-ice-cream text-lg"></i>
-                        <span class="text-[9px] font-bold mt-1">#2</span>
-                    </div>
-                    <div class="aspect-square rounded-xl bg-terracotta text-white flex flex-col items-center justify-center shadow-sm relative overflow-hidden">
-                        <i class="fa-solid fa-mug-hot text-lg"></i>
-                        <span class="text-[9px] font-bold mt-1">#3</span>
-                    </div>
-                    <div class="aspect-square rounded-xl bg-terracotta text-white flex flex-col items-center justify-center shadow-sm relative overflow-hidden">
-                        <i class="fa-solid fa-mug-hot text-lg"></i>
-                        <span class="text-[9px] font-bold mt-1">#4</span>
-                    </div>
-                    <div class="aspect-square rounded-xl bg-terracotta text-white flex flex-col items-center justify-center shadow-sm relative overflow-hidden">
-                        <i class="fa-solid fa-ice-cream text-lg"></i>
-                        <span class="text-[9px] font-bold mt-1">#5</span>
-                    </div>
-
-                    <!-- Stamps 6 to 8 (Empty) -->
-                    <div class="aspect-square rounded-xl border-2 border-dashed border-gray-300 text-gray-400 flex flex-col items-center justify-center">
-                        <span class="text-[10px] font-bold">#6</span>
-                    </div>
-                    <div class="aspect-square rounded-xl border-2 border-dashed border-gray-300 text-gray-400 flex flex-col items-center justify-center">
-                        <span class="text-[10px] font-bold">#7</span>
-                    </div>
-                    <div class="aspect-square rounded-xl border-2 border-dashed border-terracotta text-terracotta bg-terracotta/5 flex flex-col items-center justify-center">
-                        <i class="fa-solid fa-gift text-lg"></i>
-                        <span class="text-[9px] font-bold mt-0.5">FREE</span>
-                    </div>
-                </div>
-
-                <div class="bg-coastalNavy text-creamCanvas p-3 rounded-xl text-left text-xs flex justify-between items-center">
-                    <div>
-                        <p class="font-semibold">3 stamps away from reward</p>
-                        <p class="text-[10px] text-creamDark">Show QR code at truck counter</p>
-                    </div>
-                    <button onclick="alert('Scan code at pickup counter to add stamp!')" class="bg-terracotta px-3 py-1.5 rounded-lg font-bold text-white shadow">Show QR</button>
-                </div>
-            </div>
-        </section>
-
-        <!-- VIEW TAB 5: ACCOUNT PAGE -->
-        <section id="tab-account" class="hidden space-y-4">
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-creamDark space-y-4">
-                <div class="flex items-center space-x-3 pb-3 border-b border-gray-100">
-                    <div class="w-12 h-12 bg-coastalNavy text-creamCanvas rounded-full flex items-center justify-center text-xl font-bold font-serif">
-                        A
-                    </div>
-                    <div>
-                        <h3 class="font-bold text-coastalNavy text-base">Antimo Friend</h3>
-                        <p class="text-xs text-gray-500">antimo.lover@example.com</p>
-                    </div>
-                </div>
-
-                <div class="space-y-2 text-xs">
-                    <a href="#" class="flex justify-between items-center p-2.5 rounded-xl hover:bg-creamCanvas transition text-coastalNavy">
-                        <span class="font-medium"><i class="fa-solid fa-receipt text-terracotta mr-2"></i> Order History</span>
-                        <i class="fa-solid fa-chevron-right text-gray-400"></i>
-                    </a>
-                    <a href="#" class="flex justify-between items-center p-2.5 rounded-xl hover:bg-creamCanvas transition text-coastalNavy">
-                        <span class="font-medium"><i class="fa-solid fa-credit-card text-terracotta mr-2"></i> Payment Methods</span>
-                        <i class="fa-solid fa-chevron-right text-gray-400"></i>
-                    </a>
-                    <a href="#" onclick="toggleModal('image-guide-modal')" class="flex justify-between items-center p-2.5 rounded-xl hover:bg-creamCanvas transition text-coastalNavy bg-amber-50/60 border border-amber-200/50">
-                        <span class="font-medium text-amber-900"><i class="fa-solid fa-image text-terracotta mr-2"></i> Custom Image Upload Guide</span>
-                        <i class="fa-solid fa-chevron-right text-amber-600"></i>
-                    </a>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- SLIDE-OUT DRAWER OVERLAY -->
-    <div id="drawer-overlay" class="fixed inset-0 bg-black/50 z-40 hidden opacity-0 transition-opacity duration-300" onclick="closeDrawer()"></div>
-
-    <!-- SLIDE-OUT DRAWER -->
-    <aside id="drawer" class="fixed top-0 left-0 bottom-0 w-4/5 max-w-xs bg-coastalNavy text-creamCanvas z-50 transform -translate-x-full transition-transform duration-300 ease-in-out flex flex-col justify-between p-5 shadow-2xl">
-        <div class="space-y-6">
-            <div class="flex justify-between items-center border-b border-navyLight pb-4">
-                <div class="flex items-center space-x-2">
-                    <div class="w-8 h-8 rounded-full bg-terracotta flex items-center justify-center">
-                        <i class="fa-solid fa-mug-hot text-white text-sm"></i>
-                    </div>
-                    <span class="font-serif font-bold text-lg text-creamCanvas">Antimo's</span>
-                </div>
-                <button onclick="closeDrawer()" class="text-creamDark hover:text-white text-xl p-1"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-
-            <nav class="space-y-3 text-sm">
-                <button onclick="openDrawerSection('story')" class="w-full text-left p-2.5 rounded-xl hover:bg-navyLight flex items-center space-x-3 transition">
-                    <i class="fa-solid fa-book-open text-terracotta"></i>
-                    <span>Our Story</span>
-                </button>
-                <button onclick="openDrawerSection('catering')" class="w-full text-left p-2.5 rounded-xl hover:bg-navyLight flex items-center space-x-3 transition">
-                    <i class="fa-solid fa-calculator text-terracotta"></i>
-                    <span>Catering Quote Calculator</span>
-                </button>
-                <button onclick="openDrawerSection('reviews')" class="w-full text-left p-2.5 rounded-xl hover:bg-navyLight flex items-center space-x-3 transition">
-                    <i class="fa-solid fa-star text-terracotta"></i>
-                    <span>Customer Reviews</span>
-                </button>
-                <button onclick="openDrawerSection('faq')" class="w-full text-left p-2.5 rounded-xl hover:bg-navyLight flex items-center space-x-3 transition">
-                    <i class="fa-solid fa-circle-question text-terracotta"></i>
-                    <span>FAQ</span>
-                </button>
-            </nav>
-        </div>
-
-        <div class="pt-4 border-t border-navyLight text-xs text-creamDark space-y-2">
-            <p><i class="fa-solid fa-location-dot text-terracotta mr-1"></i> Long Beach, Long Island NY</p>
-            <p>&copy; 2026 Antimo's Affogato Mobile Bar</p>
-        </div>
-    </aside>
-
-    <!-- BOTTOM NAVIGATION BAR -->
-    <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t border-creamDark z-30 flex justify-around py-2 px-1 shadow-lg">
-        <button onclick="switchTab('home')" class="nav-btn active flex flex-col items-center text-coastalNavy text-[10px] font-medium py-1 px-3 rounded-xl transition" id="nav-home">
-            <i class="fa-solid fa-house text-lg mb-0.5"></i>
-            <span>Home</span>
-        </button>
-        <button onclick="switchTab('menu')" class="nav-btn flex flex-col items-center text-gray-400 text-[10px] font-medium py-1 px-3 rounded-xl transition" id="nav-menu">
-            <i class="fa-solid fa-utensils text-lg mb-0.5"></i>
-            <span>Menu</span>
-        </button>
-        <button onclick="switchTab('map')" class="nav-btn flex flex-col items-center text-gray-400 text-[10px] font-medium py-1 px-3 rounded-xl transition" id="nav-map">
-            <i class="fa-solid fa-map-marked-alt text-lg mb-0.5"></i>
-            <span>Truck Map</span>
-        </button>
-        <button onclick="switchTab('rewards')" class="nav-btn flex flex-col items-center text-gray-400 text-[10px] font-medium py-1 px-3 rounded-xl transition" id="nav-rewards">
-            <i class="fa-solid fa-certificate text-lg mb-0.5"></i>
-            <span>Rewards</span>
-        </button>
-        <button onclick="switchTab('account')" class="nav-btn flex flex-col items-center text-gray-400 text-[10px] font-medium py-1 px-3 rounded-xl transition" id="nav-account">
-            <i class="fa-solid fa-user text-lg mb-0.5"></i>
-            <span>Account</span>
-        </button>
-    </nav>
-
-    <!-- MODAL: IMAGE UPLOAD / HOSTING GUIDE -->
-    <div id="image-guide-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-sm w-full max-h-[85vh] overflow-y-auto p-5 space-y-4 text-coastalNavy shadow-2xl relative">
-            <button onclick="toggleModal('image-guide-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-coastalNavy"><i class="fa-solid fa-xmark text-xl"></i></button>
-            
-            <div class="flex items-center space-x-2 text-terracotta border-b border-gray-100 pb-3">
-                <i class="fa-solid fa-image text-2xl"></i>
-                <h3 class="font-serif font-bold text-lg text-coastalNavy">How to Use Custom Images</h3>
-            </div>
-
-            <p class="text-xs text-gray-600 leading-relaxed">
-                Want to replace default placeholders with your actual photos (e.g., <code class="bg-gray-100 px-1 py-0.5 rounded text-terracotta font-mono">logo.png</code> or affogato photos)? Here are two simple, reliable ways:
-            </p>
-
-            <div class="space-y-3 text-xs">
-                <!-- METHOD 1 -->
-                <div class="bg-creamCanvas p-3 rounded-xl border border-creamDark space-y-1">
-                    <h4 class="font-bold text-coastalNavy flex items-center gap-1.5">
-                        <span class="bg-terracotta text-white w-4 h-4 rounded-full inline-flex items-center justify-center text-[10px]">1</span>
-                        Local Repo / Folder
-                    </h4>
-                    <p class="text-gray-600">Save your image files (e.g. <code class="bg-white px-1 font-mono">logo.png</code>, <code class="bg-white px-1 font-mono">hero.jpg</code>) in the exact same folder as this <code class="bg-white px-1 font-mono">index.html</code> file.</p>
-                </div>
-
-                <!-- METHOD 2 -->
-                <div class="bg-creamCanvas p-3 rounded-xl border border-creamDark space-y-1">
-                    <h4 class="font-bold text-coastalNavy flex items-center gap-1.5">
-                        <span class="bg-terracotta text-white w-4 h-4 rounded-full inline-flex items-center justify-center text-[10px]">2</span>
-                        Free Image Hosting (Imgur / Cloudinary)
-                    </h4>
-                    <ol class="list-decimal list-inside text-gray-600 space-y-1 pl-1">
-                        <li>Upload your photo to <a href="https://imgur.com" target="_blank" class="text-terracotta underline">Imgur.com</a> or <a href="https://postimages.org" target="_blank" class="text-terracotta underline">Postimages.org</a>.</li>
-                        <li>Copy the <strong>Direct Image Link</strong> ending in <code class="font-mono text-[10px]">.jpg</code> or <code class="font-mono text-[10px]">.png</code>.</li>
-                        <li>Replace the <code class="font-mono text-[10px]">src="..."</code> attribute in this code with your link!</li>
-                    </ol>
-                </div>
-
-                <!-- PROTECTION FEATURE -->
-                <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-200 text-emerald-900 space-y-1">
-                    <h4 class="font-bold flex items-center gap-1.5 text-xs">
-                        <i class="fa-solid fa-shield-halved text-emerald-600"></i> Automatic Fallback Active
-                    </h4>
-                    <p class="text-[11px]">
-                        This app uses <code class="font-mono text-[10px]">onerror="handleImageError(this)"</code> on every image. If an image link fails or is missing, a beautiful SVG vector fallback is shown immediately—so your app will <strong>never crash or display broken images!</strong>
-                    </p>
-                </div>
-            </div>
-
-            <button onclick="toggleModal('image-guide-modal')" class="w-full bg-coastalNavy text-white py-2.5 rounded-xl font-bold text-xs shadow hover:bg-navyLight transition">
-                Got It!
-            </button>
-        </div>
-    </div>
-
-    <!-- MODAL: CART & CHECKOUT -->
-    <div id="cart-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-end sm:items-center justify-center">
-        <div class="bg-white rounded-t-2xl sm:rounded-2xl max-w-md w-full max-h-[80vh] flex flex-col p-4 space-y-3 text-coastalNavy shadow-2xl relative">
-            <div class="flex justify-between items-center border-b border-gray-100 pb-3">
-                <h3 class="font-serif font-bold text-lg text-coastalNavy flex items-center gap-2">
-                    <i class="fa-solid fa-shopping-bag text-terracotta"></i> Your Pickup Cart
-                </h3>
-                <button onclick="toggleModal('cart-modal')" class="text-gray-400 hover:text-coastalNavy"><i class="fa-solid fa-xmark text-xl"></i></button>
-            </div>
-
-            <div id="cart-items-container" class="flex-1 overflow-y-auto space-y-2 py-2">
-                <!-- Cart Items generated by JS -->
-            </div>
-
-            <div class="border-t border-gray-100 pt-3 space-y-2 text-xs">
-                <div class="flex justify-between text-gray-600">
-                    <span>Subtotal</span>
-                    <span id="cart-subtotal" class="font-semibold text-coastalNavy">$0.00</span>
-                </div>
-                <div class="flex justify-between text-gray-600">
-                    <span>NY Tax (8.625%)</span>
-                    <span id="cart-tax" class="font-semibold text-coastalNavy">$0.00</span>
-                </div>
-                <div class="flex justify-between text-sm font-bold text-coastalNavy pt-1 border-t border-dashed">
-                    <span>Total</span>
-                    <span id="cart-total" class="text-terracotta">$0.00</span>
-                </div>
-
-                <button id="checkout-btn" onclick="processCheckout()" class="w-full bg-terracotta text-white py-3 rounded-xl font-bold text-sm shadow hover:bg-terracottaDark transition flex justify-center items-center gap-2 mt-2">
-                    <span>Place Truck Pickup Order</span>
-                    <i class="fa-solid fa-arrow-right"></i>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: DRAWER CONTENT (OUR STORY / CATERING / REVIEWS / FAQ) -->
-    <div id="drawer-content-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full max-h-[85vh] overflow-y-auto p-5 space-y-4 text-coastalNavy shadow-2xl relative" id="drawer-modal-inner">
-            <!-- Content dynamic -->
-        </div>
-    </div>
-
-    <!-- JAVASCRIPT LOGIC -->
-    <script>
-        // APP STATE
-        let currentVicinity = 0.04; // miles
-        const GEOFENCE_LIMIT = 0.10; // miles limit for ordering
-        let cart = [];
-
-        // MENU DATA WITH IMAGE FALLBACK KEYS
-        const menuItems = [
-            {
-                id: 'aff-01',
-                category: 'affogato',
-                name: 'Classic Roman Affogato',
-                price: 6.75,
-                desc: 'Double shot of hot Italian espresso poured over rich Fior di Latte gelato.',
-                imageKey: 'affogato_classic',
-                imgUrl: 'affogato.jpg'
-            },
-            {
-                id: 'aff-02',
-                category: 'affogato',
-                name: 'Pistachio Crunch Affogato',
-                price: 7.50,
-                desc: 'Bronte pistachio gelato, dark espresso shot, topped with crushed Sicilian pistachios.',
-                imageKey: 'affogato_pistachio',
-                imgUrl: 'affogato_pistachio.jpg'
-            },
-            {
-                id: 'gel-01',
-                category: 'gelato',
-                name: 'Stracciatella Scoop',
-                price: 5.25,
-                desc: 'Creamy gelato folded with fine dark chocolate shavings.',
-                imageKey: 'gelato_stracciatella',
-                imgUrl: 'gelato.jpg'
-            },
-            {
-                id: 'esp-01',
-                category: 'espresso',
-                name: 'Double Espresso Shot',
-                price: 3.50,
-                desc: 'Custom dark roast blend with thick crema.',
-                imageKey: 'espresso',
-                imgUrl: 'espresso.jpg'
-            },
-            {
-                id: 'sod-01',
-                category: 'soda',
-                name: 'Blood Orange Italian Soda',
-                price: 4.50,
-                desc: 'Sparkling San Pellegrino water infused with Sicilian blood orange syrup.',
-                imageKey: 'soda_orange',
-                imgUrl: 'soda.jpg'
-            }
-        ];
-
-        // INLINE SVG GENERATOR FOR FALLBACK IMAGES
-        function getSVGPlaceholder(type) {
-            const svgMap = {
-                logo: `<svg viewBox="0 0 100 100" class="w-full h-full bg-terracotta fill-creamCanvas p-2"><circle cx="50" cy="50" r="45" fill="#D96B43" stroke="#FAF6F0" stroke-width="3"/><path d="M30 65 h40 a10 10 0 0 0 10 -10 v-5 h-60 v5 a10 10 0 0 0 10 10 z M35 45 h30 v3 h-30 z M40 35 h20 v3 h-20 z" fill="#FAF6F0"/></svg>`,
-                hero: `<svg viewBox="0 0 400 200" class="w-full h-full bg-coastalNavy"><rect width="100%" height="100%" fill="#1A365D"/><circle cx="200" cy="100" r="70" fill="#D96B43" opacity="0.3"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#FAF6F0" font-family="serif" font-size="24">Antimo's Affogato Bar</text></svg>`,
-                affogato_classic: `<svg viewBox="0 0 200 200" class="w-full h-full bg-amber-50"><rect width="100%" height="100%" fill="#FDF8F3"/><path d="M60 120 h80 a15 15 0 0 0 15 -15 v-10 h-110 v10 a15 15 0 0 0 15 15 z" fill="#3C2415"/><circle cx="100" cy="85" r="30" fill="#FAF6F0" stroke="#D96B43" stroke-width="2"/><text x="50%" y="85%" dominant-baseline="middle" text-anchor="middle" fill="#1A365D" font-size="12" font-weight="bold">Affogato</text></svg>`,
-                affogato_pistachio: `<svg viewBox="0 0 200 200" class="w-full h-full bg-emerald-50"><rect width="100%" height="100%" fill="#F0FDF4"/><circle cx="100" cy="90" r="35" fill="#BBF7D0"/><text x="50%" y="85%" dominant-baseline="middle" text-anchor="middle" fill="#166534" font-size="12" font-weight="bold">Pistachio Affogato</text></svg>`,
-                gelato_stracciatella: `<svg viewBox="0 0 200 200" class="w-full h-full bg-creamCanvas"><circle cx="100" cy="100" r="40" fill="#FFF" stroke="#EFE6D8" stroke-width="3"/><text x="50%" y="85%" dominant-baseline="middle" text-anchor="middle" fill="#1A365D" font-size="12" font-weight="bold">Gelato Scoop</text></svg>`,
-                espresso: `<svg viewBox="0 0 200 200" class="w-full h-full bg-amber-900"><rect width="100%" height="100%" fill="#3C2415"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#FAF6F0" font-size="14" font-weight="bold">Espresso</text></svg>`,
-                soda_orange: `<svg viewBox="0 0 200 200" class="w-full h-full bg-orange-100"><rect width="100%" height="100%" fill="#FFEDD5"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#C0552D" font-size="14" font-weight="bold">Italian Soda</text></svg>`
-            };
-
-            return svgMap[type] || svgMap['affogato_classic'];
-        }
-
-        // FAILSAFE IMAGE ERROR HANDLER - PREVENTS APP CRASH
-        function handleImageError(imgElem, key) {
-            console.log(`Image failed to load for key: ${key}. Swapping with inline SVG fallback.`);
-            const parent = imgElem.parentElement;
-            if (parent) {
-                const wrapper = document.createElement('div');
-                wrapper.className = 'w-full h-full flex items-center justify-center';
-                wrapper.innerHTML = getSVGPlaceholder(key);
-                parent.replaceChild(wrapper, imgElem);
-            }
-        }
-
-        // INIT ON DOM LOAD
-        window.onload = function() {
-            renderFeaturedItems();
-            renderMenuItems('all');
-            updateCartUI();
-
-            // Setup Hamburger Menu Listener
-            document.getElementById('hamburger-btn').addEventListener('click', openDrawer);
-        };
-
-        // VICINITY TOGGLE
-        function setVicinity(dist) {
-            currentVicinity = dist;
-            const nearBtn = document.getElementById('toggle-near');
-            const farBtn = document.getElementById('toggle-far');
-            const msg = document.getElementById('vicinity-msg');
-            const alertBox = document.getElementById('geofence-alert');
-            const ping = document.getElementById('status-ping');
-            const dot = document.getElementById('status-dot');
-            const statusLabel = document.getElementById('truck-status-label');
-
-            if (dist <= GEOFENCE_LIMIT) {
-                nearBtn.className = "px-2.5 py-1 rounded-lg transition-all bg-coastalNavy text-white shadow-sm";
-                farBtn.className = "px-2.5 py-1 rounded-lg transition-all text-coastalNavy hover:bg-creamDark";
-                msg.innerText = "You are within 0.1 mi. Mobile Ordering UNLOCKED!";
-                alertBox.classList.add('hidden');
-                ping.className = "animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75";
-                dot.className = "relative inline-flex rounded-full h-3 w-3 bg-emerald-500";
-                statusLabel.innerText = "Truck Active";
-                statusLabel.className = "text-xs font-semibold uppercase tracking-wider text-emerald-700";
-            } else {
-                farBtn.className = "px-2.5 py-1 rounded-lg transition-all bg-coastalNavy text-white shadow-sm";
-                nearBtn.className = "px-2.5 py-1 rounded-lg transition-all text-coastalNavy hover:bg-creamDark";
-                msg.innerText = "Distance: 0.45 mi (Too far for pickup order)";
-                alertBox.classList.remove('hidden');
-                ping.className = "hidden";
-                dot.className = "relative inline-flex rounded-full h-3 w-3 bg-amber-500";
-                statusLabel.innerText = "Outside Range";
-                statusLabel.className = "text-xs font-semibold uppercase tracking-wider text-amber-700";
-            }
-        }
-
-        // RENDER HOMEPAGE FEATURED ITEMS
-        function renderFeaturedItems() {
-            const container = document.getElementById('featured-items-container');
-            const featured = menuItems.slice(0, 2);
-            
-            container.innerHTML = featured.map(item => `
-                <div class="bg-white rounded-2xl overflow-hidden border border-creamDark shadow-sm flex flex-col justify-between">
-                    <div class="h-28 relative bg-gray-100 overflow-hidden">
-                        <img src="${item.imgUrl}" alt="${item.name}" class="w-full h-full object-cover" onerror="handleImageError(this, '${item.imageKey}')">
-                    </div>
-                    <div class="p-3 flex-1 flex flex-col justify-between">
-                        <div>
-                            <h4 class="font-bold text-xs text-coastalNavy">${item.name}</h4>
-                            <p class="text-[11px] text-terracotta font-semibold mt-0.5">$${item.price.toFixed(2)}</p>
-                        </div>
-                        <button onclick="addToCart('${item.id}')" class="mt-2 w-full bg-coastalNavy text-white py-1.5 rounded-lg text-[11px] font-medium hover:bg-navyLight transition">
-                            + Add
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // RENDER MENU ITEMS
-        function renderMenuItems(cat) {
-            const container = document.getElementById('menu-items-list');
-            const filtered = cat === 'all' ? menuItems : menuItems.filter(i => i.category === cat);
-
-            container.innerHTML = filtered.map(item => `
-                <div class="bg-white p-3 rounded-2xl border border-creamDark shadow-sm flex gap-3 items-center">
-                    <div class="w-20 h-20 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0">
-                        <img src="${item.imgUrl}" alt="${item.name}" class="w-full h-full object-cover" onerror="handleImageError(this, '${item.imageKey}')">
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <h4 class="font-bold text-sm text-coastalNavy truncate">${item.name}</h4>
-                        <p class="text-[11px] text-gray-500 line-clamp-2 mt-0.5">${item.desc}</p>
-                        <div class="flex justify-between items-center mt-2">
-                            <span class="font-bold text-xs text-terracotta">$${item.price.toFixed(2)}</span>
-                            <button onclick="addToCart('${item.id}')" class="bg-terracotta text-white px-3 py-1 rounded-lg text-xs font-semibold hover:bg-terracottaDark transition">
-                                Add
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function filterMenu(cat) {
-            document.querySelectorAll('.menu-cat-btn').forEach(btn => {
-                btn.className = "menu-cat-btn px-3.5 py-2 rounded-full font-semibold whitespace-nowrap bg-creamDark text-coastalNavy";
-            });
-            event.target.className = "menu-cat-btn active px-3.5 py-2 rounded-full font-semibold whitespace-nowrap bg-coastalNavy text-white";
-            renderMenuItems(cat);
-        }
-
-        // CART LOGIC
-        function addToCart(itemId) {
-            if (currentVicinity > GEOFENCE_LIMIT) {
-                alert("You are outside the 0.1 mile range from Antimo's truck! Please move closer to place an order.");
-                return;
-            }
-            const item = menuItems.find(i => i.id === itemId);
-            const existing = cart.find(i => i.id === itemId);
-            if (existing) {
-                existing.qty++;
-            } else {
-                cart.push({ ...item, qty: 1 });
-            }
-            updateCartUI();
-        }
-
-        function updateCartQty(itemId, delta) {
-            const index = cart.findIndex(i => i.id === itemId);
-            if (index !== -1) {
-                cart[index].qty += delta;
-                if (cart[index].qty <= 0) {
-                    cart.splice(index, 1);
-                }
-            }
-            updateCartUI();
-        }
-
-        function updateCartUI() {
-            const badge = document.getElementById('cart-badge');
-            const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
-
-            if (totalQty > 0) {
-                badge.innerText = totalQty;
-                badge.classList.remove('hidden');
-            } else {
-                badge.classList.add('hidden');
-            }
-
-            const container = document.getElementById('cart-items-container');
-            if (cart.length === 0) {
-                container.innerHTML = `<p class="text-xs text-gray-400 text-center py-8">Your cart is empty.</p>`;
-            } else {
-                container.innerHTML = cart.map(item => `
-                    <div class="flex justify-between items-center bg-creamCanvas p-2.5 rounded-xl border border-creamDark">
-                        <div>
-                            <p class="font-bold text-xs text-coastalNavy">${item.name}</p>
-                            <p class="text-[10px] text-terracotta font-semibold">$${(item.price * item.qty).toFixed(2)}</p>
-                        </div>
-                        <div class="flex items-center space-x-2 bg-white px-2 py-1 rounded-lg border border-gray-200">
-                            <button onclick="updateCartQty('${item.id}', -1)" class="text-xs font-bold text-gray-500 hover:text-terracotta px-1">-</button>
-                            <span class="text-xs font-bold text-coastalNavy">${item.qty}</span>
-                            <button onclick="updateCartQty('${item.id}', 1)" class="text-xs font-bold text-gray-500 hover:text-terracotta px-1">+</button>
-                        </div>
-                    </div>
-                `).join('');
-            }
-
-            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-            const tax = subtotal * 0.08625;
-            const total = subtotal + tax;
-
-            document.getElementById('cart-subtotal').innerText = `$${subtotal.toFixed(2)}`;
-            document.getElementById('cart-tax').innerText = `$${tax.toFixed(2)}`;
-            document.getElementById('cart-total').innerText = `$${total.toFixed(2)}`;
-        }
-
-        function processCheckout() {
-            if (cart.length === 0) {
-                alert("Your cart is empty!");
-                return;
-            }
-            alert("Order placed successfully! Antimo's truck is preparing your freshly pulled affogato.");
-            cart = [];
-            updateCartUI();
-            toggleModal('cart-modal');
-        }
-
-        // NAVIGATION TABS
-        function switchTab(tabId) {
-            ['home', 'menu', 'map', 'rewards', 'account'].forEach(t => {
-                document.getElementById(`tab-${t}`).classList.add('hidden');
-                document.getElementById(`nav-${t}`).className = "nav-btn flex flex-col items-center text-gray-400 text-[10px] font-medium py-1 px-3 rounded-xl transition";
-            });
-
-            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-            document.getElementById(`nav-${tabId}`).className = "nav-btn active flex flex-col items-center text-coastalNavy text-[10px] font-medium py-1 px-3 rounded-xl transition";
-        }
-
-        // DRAWER CONTROLS
-        function openDrawer() {
-            document.getElementById('drawer-overlay').classList.remove('hidden');
-            setTimeout(() => {
-                document.getElementById('drawer-overlay').classList.remove('opacity-0');
-                document.getElementById('drawer').classList.remove('-translate-x-full');
-            }, 10);
-        }
-
-        function closeDrawer() {
-            document.getElementById('drawer').classList.add('-translate-x-full');
-            document.getElementById('drawer-overlay').classList.add('opacity-0');
-            setTimeout(() => {
-                document.getElementById('drawer-overlay').classList.add('hidden');
-            }, 300);
-        }
-
-        function openDrawerSection(section) {
-            closeDrawer();
-            const inner = document.getElementById('drawer-modal-inner');
-            
-            const contents = {
-                story: `
-                    <h3 class="font-serif font-bold text-lg text-coastalNavy border-b pb-2">Our Story</h3>
-                    <p class="text-xs text-gray-600 leading-relaxed">Antimo's Affogato was born out of a love for seaside Roman summers. Our mobile truck serves freshly pulled dark espresso poured directly over rich artisanal gelato right on the Long Island waterfront.</p>
-                `,
-                catering: `
-                    <h3 class="font-serif font-bold text-lg text-coastalNavy border-b pb-2">Catering Calculator</h3>
-                    <div class="space-y-3 text-xs">
-                        <label class="block">
-                            <span class="text-gray-700 font-semibold">Number of Guests:</span>
-                            <input type="number" id="guest-count" value="50" oninput="calcCatering()" class="mt-1 w-full p-2 border rounded-xl text-xs">
-                        </label>
-                        <div class="bg-creamCanvas p-3 rounded-xl border border-creamDark">
-                            <p class="font-bold text-coastalNavy">Estimated Quote:</p>
-                            <p id="catering-price" class="text-lg font-bold text-terracotta">$350.00</p>
-                        </div>
-                    </div>
-                `,
-                reviews: `
-                    <h3 class="font-serif font-bold text-lg text-coastalNavy border-b pb-2">Customer Reviews</h3>
-                    <div class="space-y-2 text-xs">
-                        <div class="bg-creamCanvas p-2.5 rounded-xl border border-creamDark">
-                            <p class="font-bold text-coastalNavy">"Best affogato in Long Island!"</p>
-                            <p class="text-[10px] text-gray-500">- Sarah M. ⭐⭐⭐⭐⭐</p>
-                        </div>
-                        <div class="bg-creamCanvas p-2.5 rounded-xl border border-creamDark">
-                            <p class="font-bold text-coastalNavy">"The pistachio crunch is unmissable."</p>
-                            <p class="text-[10px] text-gray-500">- Mark K. ⭐⭐⭐⭐⭐</p>
-                        </div>
-                    </div>
-                `,
-                faq: `
-                    <h3 class="font-serif font-bold text-lg text-coastalNavy border-b pb-2">Frequently Asked Questions</h3>
-                    <div class="space-y-2 text-xs text-gray-600">
-                        <p><strong>Q: What is the truck pickup radius?</strong><br/>A: Pickup ordering is available within 0.1 miles of the truck.</p>
-                        <p><strong>Q: Do you offer vegan gelato?</strong><br/>A: Yes! Our sorbetto options are 100% plant-based.</p>
-                    </div>
-                `
-            };
-
-            inner.innerHTML = `
-                <button onclick="toggleModal('drawer-content-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-coastalNavy"><i class="fa-solid fa-xmark text-xl"></i></button>
-                ${contents[section] || ''}
-            `;
-            toggleModal('drawer-content-modal');
-        }
-
-        function calcCatering() {
-            const count = parseInt(document.getElementById('guest-count').value) || 0;
-            const total = count * 7;
-            document.getElementById('catering-price').innerText = `$${total.toFixed(2)}`;
-        }
-
-        // MODAL TOGGLE
-        function toggleModal(modalId) {
-            const modal = document.getElementById(modalId);
-            modal.classList.toggle('hidden');
-        }
-
-        // PWA INSTRUCTIONS
-        function closePWABanner() {
-            document.getElementById('pwa-banner').classList.add('hidden');
-        }
-
-        function showPWAInstructions() {
-            alert("To Install on Mobile:\n\n1. Safari (iOS): Tap Share button -> 'Add to Home Screen'\n2. Chrome (Android): Tap 3-dots menu -> 'Add to Home Screen'");
-        }
-    </script>
-</body>
-</html>
+antimos-affogato-app/
+├─ app/
+│  ├─ (tabs)/
+│  │  ├─ _layout.tsx
+│  │  ├─ index.tsx
+│  │  ├─ menu.tsx
+│  │  ├─ rewards.tsx
+│  │  ├─ profile.tsx
+│  │  └─ map.tsx
+│  ├─ auth/
+│  │  ├─ login.tsx
+│  │  └─ signup.tsx
+│  ├─ cart.tsx
+│  ├─ checkout.tsx
+│  ├─ order-status.tsx
+│  ├─ product/
+│  │  └─ [id].tsx
+│  ├─ events.tsx
+│  ├─ contact.tsx
+│  ├─ faq.tsx
+│  ├─ story.tsx
+│  ├─ reviews.tsx
+│  ├─ feedback.tsx
+│  ├─ _layout.tsx
+│  └─ index.tsx
+├─ assets/
+│  ├─ images/
+│  │  ├─ logo/
+│  │  │  ├─ antimos-logo-primary.png
+│  │  │  ├─ antimos-logo-monogram.png
+│  │  │  └─ antimos-logo-dark.png
+│  │  ├─ menu/
+│  │  │  ├─ affogato.jpg
+│  │  │  ├─ cold-brew.jpg
+│  │  │  └─ signature-drink.jpg
+│  │  └─ truck/
+│  │     └─ truck-hero.jpg
+│  └─ fonts/
+│     └─ brand-font.ttf
+├─ components/
+│  ├─ ui/
+│  │  ├─ AppButton.tsx
+│  │  ├─ Card.tsx
+│  │  ├─ GlassCard.tsx
+│  │  ├─ SectionHeader.tsx
+│  │  ├─ Badge.tsx
+│  │  └─ FavoriteButton.tsx
+│  ├─ menu/
+│  │  ├─ MenuCategoryTabs.tsx
+│  │  ├─ MenuItemCard.tsx
+│  │  └─ MenuGrid.tsx
+│  ├─ rewards/
+│  │  ├─ RewardTierCard.tsx
+│  │  └─ PointsProgress.tsx
+│  ├─ map/
+│  │  ├─ TruckMap.tsx
+│  │  └─ LocationStatusCard.tsx
+│  └─ order/
+│     ├─ CartItemRow.tsx
+│     ├─ OrderStatusTimeline.tsx
+│     └─ PickupBadge.tsx
+├─ constants/
+│  ├─ colors.ts
+│  ├─ spacing.ts
+│  ├─ typography.ts
+│  ├─ config.ts
+│  └─ menu.ts
+├─ data/
+│  ├─ menu.ts
+│  ├─ rewards.ts
+│  ├─ faq.ts
+│  ├─ reviews.ts
+│  └─ story.ts
+├─ hooks/
+│  ├─ useLocation.ts
+│  ├─ useGeofence.ts
+│  ├─ useFavorites.ts
+│  └─ useRewards.ts
+├─ lib/
+│  ├─ supabase.ts
+│  ├─ stripe.ts
+│  ├─ geofence.ts
+│  ├─ currency.ts
+│  ├─ format.ts
+│  └─ order-status.ts
+├─ store/
+│  ├─ authStore.ts
+│  ├─ cartStore.ts
+│  ├─ rewardsStore.ts
+│  ├─ orderStore.ts
+│  └─ favoritesStore.ts
+├─ types/
+│  ├─ menu.ts
+│  ├─ order.ts
+│  ├─ rewards.ts
+│  └─ user.ts
+├─ app.config.ts
+├─ babel.config.js
+├─ package.json
+├─ tsconfig.json
+├─ .env.example
+├─ README.md
+└─ App.tsx
